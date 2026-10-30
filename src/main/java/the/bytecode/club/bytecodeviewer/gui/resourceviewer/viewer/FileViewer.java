@@ -1,30 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer;
-
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.image.BufferedImage;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import org.apache.commons.io.FilenameUtils;
-import org.imgscalr.Scalr;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.Configuration;
-import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
-import the.bytecode.club.bytecodeviewer.gui.components.ImageJLabel;
-import the.bytecode.club.bytecodeviewer.gui.components.SearchableRSyntaxTextArea;
-import the.bytecode.club.bytecodeviewer.gui.hexviewer.JHexEditor;
-import the.bytecode.club.bytecodeviewer.resources.Resource;
-import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
-import the.bytecode.club.bytecodeviewer.resources.ResourceType;
-import the.bytecode.club.bytecodeviewer.util.MiscUtils;
-import the.bytecode.club.bytecodeviewer.util.SyntaxLanguage;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -40,6 +16,26 @@ import the.bytecode.club.bytecodeviewer.util.SyntaxLanguage;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer;
+
+import org.apache.commons.io.FilenameUtils;
+import org.imgscalr.Scalr;
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.Configuration;
+import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
+import the.bytecode.club.bytecodeviewer.gui.components.ImageJLabel;
+import the.bytecode.club.bytecodeviewer.gui.components.SearchableRSyntaxTextArea;
+import the.bytecode.club.bytecodeviewer.gui.hexviewer.HexViewer;
+import the.bytecode.club.bytecodeviewer.resources.Resource;
+import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
+import the.bytecode.club.bytecodeviewer.resources.ResourceType;
+import the.bytecode.club.bytecodeviewer.util.MiscUtils;
+import the.bytecode.club.bytecodeviewer.util.SyntaxLanguage;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+
 /**
  * Represents any open non-class file inside of a tab.
  *
@@ -49,77 +45,75 @@ import the.bytecode.club.bytecodeviewer.util.SyntaxLanguage;
 public class FileViewer extends ResourceViewer
 {
     public static final float ZOOM_STEP_SIZE = 1.5f;
-    public final SearchableRSyntaxTextArea textArea = (SearchableRSyntaxTextArea)
-            Configuration.rstaTheme.apply(new SearchableRSyntaxTextArea());
+    public final SearchableRSyntaxTextArea textArea = (SearchableRSyntaxTextArea) Configuration.rstaTheme.apply(new SearchableRSyntaxTextArea());
     public final JPanel mainPanel = new JPanel(new BorderLayout());
     public BufferedImage originalImage;
     public BufferedImage image;
     public boolean canRefresh;
     public int zoomSteps = 0;
 
-    public FileViewer(final ResourceContainer container, final String name)
+    public FileViewer(ResourceContainer container, String name)
     {
         super(new Resource(name, container.getWorkingName(name), container));
-        
+
         this.setName(name);
         this.setLayout(new BorderLayout());
-        
         this.add(mainPanel, BorderLayout.CENTER);
 
         setContents();
     }
-    
+
     public void setContents()
     {
         final byte[] contents = resource.getResourceBytes();
         final String nameLowerCase = this.resource.name.toLowerCase();
         final String onlyName = FilenameUtils.getName(nameLowerCase);
-        final String contentsAsString = new String(contents);
-        final boolean hexViewerOnly = BytecodeViewer.viewer.viewPane1.getSelectedDecompiler() == Decompiler.HEXCODE_VIEWER &&
-                BytecodeViewer.viewer.viewPane2.getSelectedDecompiler() == Decompiler.NONE &&
-                BytecodeViewer.viewer.viewPane3.getSelectedDecompiler() == Decompiler.NONE;
-        
+        final boolean hexViewerOnly = BytecodeViewer.viewer.viewPane1.getSelectedDecompiler() == Decompiler.HEXCODE_VIEWER
+            && BytecodeViewer.viewer.viewPane2.getSelectedDecompiler() == Decompiler.NONE
+            && BytecodeViewer.viewer.viewPane3.getSelectedDecompiler() == Decompiler.NONE;
+
         //image viewer
-        if (!MiscUtils.isPureAscii(contentsAsString) || hexViewerOnly)
+        if (MiscUtils.guessIfBinary(contents) || hexViewerOnly)
         {
             //TODO:
             //  + Add file header checks
             //  + Check for CAFEBABE
             //  + ClassRead then quick-decompile using Pane1 Decompiler
             //      (If none selected, try Pane2, Pane3, default to Procyon)
-            
-            
+
             //check by file extension to display image
-            if (!onlyName.contains(":") &&
-                    ResourceType.imageExtensionMap.containsKey(FilenameUtils.getExtension(onlyName)) &&
-                    !hexViewerOnly)
+            if (!onlyName.contains(":")
+                && ResourceType.IMAGE_EXTENSION_MAP.containsKey(FilenameUtils.getExtension(onlyName))
+                && !hexViewerOnly)
             {
                 canRefresh = true;
 
                 image = MiscUtils.loadImage(image, contents);
-                if (image == null) {
-                    JHexEditor hex = new JHexEditor(contents);
+
+                if (image == null)
+                {
+                    HexViewer hex = new HexViewer(contents);
                     mainPanel.add(hex);
                     return;
                 }
+
                 originalImage = image;
 
                 mainPanel.add(new ImageJLabel(image), BorderLayout.CENTER);
-                mainPanel.addMouseWheelListener(e -> {
+                mainPanel.addMouseWheelListener(e ->
+                {
                     int notches = e.getWheelRotation();
                     int width = originalImage.getWidth();
                     int height = originalImage.getHeight();
                     int oldZoomSteps = zoomSteps;
 
-                    if (notches < 0) {
-                        //zoom in
+                    if (notches < 0) //zoom in
                         zoomSteps++;
-                    } else {
-                        //zoom out
+                    else //zoom out
                         zoomSteps--;
-                    }
 
-                    try {
+                    try
+                    {
                         double factor = Math.pow(ZOOM_STEP_SIZE, zoomSteps);
                         int newWidth = (int) (width * factor);
                         int newHeight = (int) (height * factor);
@@ -128,54 +122,57 @@ public class FileViewer extends ResourceViewer
                         mainPanel.removeAll();
                         mainPanel.add(new ImageJLabel(image), BorderLayout.CENTER);
                         mainPanel.updateUI();
-                    } catch (Throwable ignored) {
+                    }
+                    catch (Throwable ignored)
+                    {
                         zoomSteps = oldZoomSteps;
                     }
                 });
                 return;
             }
+
             //hex viewer
             else if (BytecodeViewer.viewer.forcePureAsciiAsText.isSelected() || hexViewerOnly)
             {
-                JHexEditor hex = new JHexEditor(contents);
+                HexViewer hex = new HexViewer(contents);
                 mainPanel.add(hex);
                 return;
             }
         }
-        
+
         textArea.setCodeFoldingEnabled(true);
-        textArea.setSyntaxEditingStyle(SyntaxLanguage.detectLanguage(nameLowerCase, contentsAsString).getSyntaxConstant());
-        textArea.setText(contentsAsString);
+        SyntaxLanguage.setLanguage(textArea, nameLowerCase);
+        textArea.setText(new String(contents));
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, (int) BytecodeViewer.viewer.fontSpinner.getValue()));
         textArea.setCaretPosition(0);
-        
+
         mainPanel.add(textArea.getScrollPane());
     }
-    
+
     @Override
     public void refresh(JButton src)
     {
         refreshTitle();
-        
+
         if (!canRefresh)
         {
-            if(src != null)
+            if (src != null)
                 src.setEnabled(true);
-            
+
             return;
         }
 
         mainPanel.removeAll();
-      
+
         image = MiscUtils.loadImage(image, resource.getResourceBytes());
-        
+
         JLabel label = new JLabel("", new ImageIcon(image), JLabel.CENTER);
         mainPanel.add(label, BorderLayout.CENTER);
         mainPanel.updateUI();
-    
-        if(src != null)
+
+        if (src != null)
             src.setEnabled(true);
     }
-    
+
     private static final long serialVersionUID = 6103372882168257164L;
 }

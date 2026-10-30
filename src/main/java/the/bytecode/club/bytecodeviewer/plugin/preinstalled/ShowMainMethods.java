@@ -1,15 +1,6 @@
-package the.bytecode.club.bytecodeviewer.plugin.preinstalled;
-
-import java.util.ArrayList;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
-import the.bytecode.club.bytecodeviewer.api.Plugin;
-import the.bytecode.club.bytecodeviewer.api.PluginConsole;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,6 +16,16 @@ import the.bytecode.club.bytecodeviewer.api.PluginConsole;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.plugin.preinstalled;
+
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
+import the.bytecode.club.bytecodeviewer.api.Plugin;
+import the.bytecode.club.bytecodeviewer.api.PluginConsole;
+
+import java.util.List;
+
 /**
  * Simply shows all classes that have a public static void main(String[])
  *
@@ -37,11 +38,11 @@ public class ShowMainMethods extends Plugin
     private static final int PUBLIC_STATIC = Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC;
 
     @Override
-    public void execute(ArrayList<ClassNode> classNodeList)
+    public void execute(List<ClassNode> classNodeList)
     {
         PluginConsole frame = new PluginConsole("Show Main Methods");
         StringBuilder sb = new StringBuilder();
-        
+
         for (ClassNode classNode : classNodeList)
         {
             for (Object o : classNode.methods.toArray())

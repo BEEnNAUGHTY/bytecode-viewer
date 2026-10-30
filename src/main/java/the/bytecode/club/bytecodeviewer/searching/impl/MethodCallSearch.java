@@ -1,28 +1,6 @@
-package the.bytecode.club.bytecodeviewer.searching.impl;
-
-import eu.bibl.banalysis.asm.desc.OpcodeInfo;
-
-import java.awt.*;
-import java.util.Iterator;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.searching.EnterKeyEvent;
-import the.bytecode.club.bytecodeviewer.searching.LDCSearchTreeNodeResult;
-import the.bytecode.club.bytecodeviewer.searching.SearchPanel;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedComponents;
-import the.bytecode.club.bytecodeviewer.translation.components.TranslatedJLabel;
-import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -37,6 +15,23 @@ import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
+
+package the.bytecode.club.bytecodeviewer.searching.impl;
+
+import eu.bibl.banalysis.asm.desc.OpcodeInfo;
+import org.objectweb.asm.tree.*;
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.gui.theme.LAFTheme;
+import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
+import the.bytecode.club.bytecodeviewer.searching.EnterKeyEvent;
+import the.bytecode.club.bytecodeviewer.searching.LDCSearchTreeNodeResult;
+import the.bytecode.club.bytecodeviewer.searching.SearchPanel;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedComponents;
+import the.bytecode.club.bytecodeviewer.translation.components.TranslatedJLabel;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.Iterator;
 
 /**
  * Method call searching
@@ -61,40 +56,57 @@ public class MethodCallSearch implements SearchPanel
         mName.addKeyListener(EnterKeyEvent.SINGLETON);
         mDesc = new JTextField("");
         mDesc.addKeyListener(EnterKeyEvent.SINGLETON);
+        LAFTheme.registerThemeUpdate(mOwner, mName, mDesc);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Method Call Search";
     }
 
     public JPanel getPanel()
     {
         if (myPanel == null)
         {
-            myPanel = new JPanel(new GridLayout(3, 2));
-            myPanel.add(new TranslatedJLabel("Owner: ", TranslatedComponents.OWNER));
-            myPanel.add(mOwner);
-            myPanel.add(new TranslatedJLabel("Name: ", TranslatedComponents.NAME));
-            myPanel.add(mName);
-            myPanel.add(new TranslatedJLabel("Desc: ", TranslatedComponents.DESC));
-            myPanel.add(mDesc);
+            myPanel = new JPanel(new BorderLayout(16, 16));
+
+            JPanel left = new JPanel(new GridLayout(3, 1));
+            JPanel right = new JPanel(new GridLayout(3, 1));
+
+            left.add(new TranslatedJLabel("Owner: ", TranslatedComponents.OWNER));
+            right.add(mOwner);
+            left.add(new TranslatedJLabel("Name: ", TranslatedComponents.NAME));
+            right.add(mName);
+            left.add(new TranslatedJLabel("Desc: ", TranslatedComponents.DESC));
+            right.add(mDesc);
+            myPanel.add(left, BorderLayout.WEST);
+            myPanel.add(right, BorderLayout.CENTER);
+            LAFTheme.registerThemeUpdate(myPanel);
         }
 
         return myPanel;
     }
-    
+
     @Override
     public void search(ResourceContainer container, String resourceWorkingName, ClassNode node, boolean exact)
     {
-        final Iterator<MethodNode> methods = node.methods.iterator();
-        
         String searchOwner = mOwner.getText();
         if (searchOwner.isEmpty())
             searchOwner = null;
-        
+
         String searchName = mName.getText();
         if (searchName.isEmpty())
             searchName = null;
-        
+
         String searchDesc = mDesc.getText();
         if (searchDesc.isEmpty())
             searchDesc = null;
+
+        if (searchName == null && searchOwner == null && searchDesc == null)
+            return;
+
+        final Iterator<MethodNode> methods = node.methods.iterator();
 
         while (methods.hasNext())
         {
@@ -106,10 +118,7 @@ public class MethodCallSearch implements SearchPanel
                 if (insnNode instanceof MethodInsnNode)
                 {
                     final MethodInsnNode min = (MethodInsnNode) insnNode;
-                    
-                    if (searchName == null && searchOwner == null && searchDesc == null)
-                        continue;
-                    
+
                     if (exact)
                     {
                         if (searchName != null && !searchName.equals(min.name))
@@ -128,23 +137,15 @@ public class MethodCallSearch implements SearchPanel
                         if (searchDesc != null && !min.desc.contains(searchDesc))
                             continue;
                     }
-                    
+
                     found(container, resourceWorkingName, node, method, insnNode);
                 }
             }
         }
     }
-    
-    public void found(final ResourceContainer container, final String resourceWorkingName, final ClassNode node, final MethodNode method, final AbstractInsnNode insnNode)
+
+    public void found(ResourceContainer container, String resourceWorkingName, ClassNode node, MethodNode method, AbstractInsnNode insnNode)
     {
-        BytecodeViewer.viewer.searchBoxPane.treeRoot.add(new LDCSearchTreeNodeResult(
-                container,
-                resourceWorkingName,
-                node,
-                method,
-                null,
-                OpcodeInfo.OPCODES.get(insnNode.getOpcode()).toLowerCase(),
-                ""
-        ));
+        BytecodeViewer.viewer.searchBoxPane.treeRoot.add(new LDCSearchTreeNodeResult(container, resourceWorkingName, node, method, null, OpcodeInfo.OPCODES.get(insnNode.getOpcode()).toLowerCase(), ""));
     }
 }

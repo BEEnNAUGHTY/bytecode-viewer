@@ -1,13 +1,6 @@
-package the.bytecode.club.bytecodeviewer.util;
-
-import the.bytecode.club.bytecodeviewer.Configuration;
-
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,16 +16,23 @@ import java.awt.event.WindowEvent;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.util;
+
+import the.bytecode.club.bytecodeviewer.Configuration;
+
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 /**
  * @author Konloch
  * @since 6/21/2021
  */
 public class WindowClosingAdapter extends WindowAdapter
 {
-	@Override
-	public void windowClosing(WindowEvent e)
-	{
-		Configuration.canExit = true;
-		System.exit(0);
-	}
+    @Override
+    public void windowClosing(WindowEvent e)
+    {
+        Configuration.canExit = true;
+        System.exit(0);
+    }
 }

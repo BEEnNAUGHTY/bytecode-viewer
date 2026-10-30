@@ -1,26 +1,6 @@
-package the.bytecode.club.bytecodeviewer.plugin.preinstalled;
-
-import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.view.mxGraph;
-import java.awt.Font;
-import java.awt.font.FontRenderContext;
-import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
-import javax.swing.JFrame;
-import javax.swing.UIManager;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.resources.IconResources;
-import the.bytecode.club.bytecodeviewer.api.Plugin;
-import the.bytecode.club.bytecodeviewer.plugin.PluginManager;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -36,6 +16,26 @@ import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.plugin.preinstalled;
+
+import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.view.mxGraph;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.api.Plugin;
+import the.bytecode.club.bytecodeviewer.plugin.PluginManager;
+import the.bytecode.club.bytecodeviewer.resources.IconResources;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.AffineTransform;
+import java.util.List;
+
 /**
  * A simple code sequence diagram.
  *
@@ -48,16 +48,16 @@ public class CodeSequenceDiagram extends Plugin
     {
         PluginManager.runPlugin(new CodeSequenceDiagram());
     }
-    
+
     @Override
-    public void execute(ArrayList<ClassNode> classNodeList)
+    public void execute(List<ClassNode> classNodeList)
     {
         if (!BytecodeViewer.isActiveResourceClass())
         {
             BytecodeViewer.showMessage(TranslatedStrings.FIRST_VIEW_A_CLASS.toString());
             return;
         }
-        
+
         ClassNode c = BytecodeViewer.getCurrentlyOpenedClassNode();
         JFrame frame = new JFrame("Code Sequence Diagram - " + c.name);
 
@@ -87,8 +87,7 @@ public class CodeSequenceDiagram extends Plugin
             for (MethodNode m : c.methods)
             {
                 String mIdentifier = c.name + "." + m.name + m.desc;
-                Object attach = graph.insertVertex(parent, null, mIdentifier, testX, testY,
-                        mIdentifier.length() * magicNumber, 30);
+                Object attach = graph.insertVertex(parent, null, mIdentifier, testX, testY, mIdentifier.length() * magicNumber, 30);
                 testX += (int) (font.getStringBounds(mIdentifier, frc).getWidth()) + 60;
                 for (AbstractInsnNode i : m.instructions.toArray())
                 {
@@ -102,7 +101,7 @@ public class CodeSequenceDiagram extends Plugin
                         attach = node2;
                     }
                 }
-                
+
                 testY += 60;
                 testX = 10;
             }

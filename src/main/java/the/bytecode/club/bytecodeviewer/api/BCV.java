@@ -1,30 +1,6 @@
-package the.bytecode.club.bytecodeviewer.api;
-
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import org.objectweb.asm.tree.ClassNode;
-import the.bytecode.club.bytecodeviewer.compilers.Compiler;
-import the.bytecode.club.bytecodeviewer.compilers.InternalCompiler;
-import the.bytecode.club.bytecodeviewer.decompilers.InternalDecompiler;
-import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
-import the.bytecode.club.bytecodeviewer.plugin.preinstalled.EZInjection;
-import the.bytecode.club.bytecodeviewer.util.DialogUtils;
-import the.bytecode.club.bytecodeviewer.util.JarUtils;
-import the.bytecode.club.bytecodeviewer.util.MiscUtils;
-
-import javax.swing.*;
-
-import static the.bytecode.club.bytecodeviewer.Constants.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -40,10 +16,38 @@ import static the.bytecode.club.bytecodeviewer.Constants.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.api;
+
+import com.konloch.taskmanager.TaskManager;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.tree.ClassNode;
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.compilers.Compiler;
+import the.bytecode.club.bytecodeviewer.compilers.AbstractCompiler;
+import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
+import the.bytecode.club.bytecodeviewer.decompilers.AbstractDecompiler;
+import the.bytecode.club.bytecodeviewer.plugin.preinstalled.EZInjection;
+import the.bytecode.club.bytecodeviewer.util.DialogUtils;
+import the.bytecode.club.bytecodeviewer.util.JarUtils;
+import the.bytecode.club.bytecodeviewer.util.MiscUtils;
+import the.bytecode.club.bytecodeviewer.util.SleepUtil;
+
+import javax.swing.*;
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Objects;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
+import static the.bytecode.club.bytecodeviewer.Constants.*;
+
 /**
- * The official API for BCV, this was designed for plugin authors and developers utilizing EZ-Injection.
- *
- * The BCV Class is meant to to help aid in dynamic analysis and plugin utility.
+ * An easier to use version of the BCV API, this is designed for anyone who wants to extend BCV, in any shape
+ * or form. One way of doing that is through the plugin system.
  *
  * @author Konloch
  */
@@ -55,9 +59,10 @@ public class BCV
     /**
      * Grab the loader instance
      *
-     * @return
+     * @return the static ClassNodeLoader instance
      */
-    public static ClassNodeLoader getClassNodeLoader() {
+    public static ClassNodeLoader getClassNodeLoader()
+    {
         return loader;
     }
 
@@ -66,7 +71,8 @@ public class BCV
      *
      * @return the URLClassLoader instance
      */
-    public static URLClassLoader getClassLoaderInstance() {
+    public static URLClassLoader getClassLoaderInstance()
+    {
         return cl;
     }
 
@@ -78,41 +84,50 @@ public class BCV
      */
     public static Class<?> loadClassIntoClassLoader(ClassNode cn)
     {
-        if(cn == null)
+        if (cn == null)
             return null;
-        
+
         getClassNodeLoader().addClass(cn);
-    
+
         try
         {
             //TODO this should be rebuilding the class loader each time a new resource has been added or removed
-            if(cl == null)
+            if (cl == null)
                 loadClassesIntoClassLoader();
-            
+
             return cl.loadClass(cn.name);
-        } catch (Exception classLoadException) {
-            the.bytecode.club.bytecodeviewer.BytecodeViewer.handleException(classLoadException);
         }
-        
+        catch (Exception classLoadException)
+        {
+            BytecodeViewer.handleException(classLoadException);
+        }
+
         return null;
     }
-    
+
+    /**
+     * This shotgun approach will class-load all the classes that have been imported into BCV.
+     *
+     * @return A list with the Class objects of the successfully loaded classes.
+     */
     public static List<Class<?>> loadClassesIntoClassLoader()
     {
         try
         {
-            File f = new File(tempDirectory + fs + MiscUtils.randomString(12) + "loaded_temp.jar");
+            File f = new File(TEMP_DIRECTORY + FS + MiscUtils.randomString(12) + "loaded_temp.jar");
             List<Class<?>> ret = new ArrayList<>();
-            
+
             JarUtils.saveAsJar(BCV.getLoadedClasses(), f.getAbsolutePath());
-            try (JarFile jarFile = new JarFile("" + f.getAbsolutePath())) {
+            try (JarFile jarFile = new JarFile("" + f.getAbsolutePath()))
+            {
 
                 Enumeration<JarEntry> e = jarFile.entries();
                 URL[] urls = {new URL("jar:file:" + "" + f.getAbsolutePath() + "!/")};
 
                 cl = URLClassLoader.newInstance(urls);
 
-                while (e.hasMoreElements()) {
+                while (e.hasMoreElements())
+                {
                     JarEntry je = e.nextElement();
 
                     if (je.isDirectory() || !je.getName().endsWith(".class"))
@@ -121,17 +136,22 @@ public class BCV
                     String className = je.getName().replace("/", ".").replace(".class", "");
                     className = className.replace('/', '.');
 
-                    try {
+                    try
+                    {
                         ret.add(cl.loadClass(className));
-                    } catch (Exception classLoadException) {
-                        the.bytecode.club.bytecodeviewer.BytecodeViewer.handleException(classLoadException);
+                    }
+                    catch (Exception classLoadException)
+                    {
+                        BytecodeViewer.handleException(classLoadException);
                     }
                 }
             }
 
             return ret;
-        } catch (Exception e) {
-            the.bytecode.club.bytecodeviewer.BytecodeViewer.handleException(e);
+        }
+        catch (Exception e)
+        {
+            BytecodeViewer.handleException(e);
         }
         return null;
     }
@@ -139,9 +159,20 @@ public class BCV
     /**
      * Creates a new instance of the ClassNode loader.
      */
-    public static void createNewClassNodeLoaderInstance() {
+    public static void createNewClassNodeLoaderInstance()
+    {
         loader.clear();
         loader = new ClassNodeLoader();
+    }
+
+    /**
+     * Returns the background Task Manager
+     *
+     * @return the global BCV background task manager
+     */
+    public static TaskManager getTaskManager()
+    {
+        return BytecodeViewer.getTaskManager();
     }
 
     /**
@@ -149,8 +180,9 @@ public class BCV
      *
      * @param plugin the file of the plugin
      */
-    public static void startPlugin(File plugin) {
-        the.bytecode.club.bytecodeviewer.BytecodeViewer.startPlugin(plugin);
+    public static void startPlugin(File plugin)
+    {
+        BytecodeViewer.startPlugin(plugin);
     }
 
     /**
@@ -159,8 +191,9 @@ public class BCV
      * @param files       an array of the files you want loaded.
      * @param recentFiles if it should save to the recent files menu.
      */
-    public static void openFiles(File[] files, boolean recentFiles) {
-        the.bytecode.club.bytecodeviewer.BytecodeViewer.openFiles(files, recentFiles);
+    public static void openFiles(File[] files, boolean recentFiles)
+    {
+        BytecodeViewer.openFiles(files, recentFiles);
     }
 
     /**
@@ -168,8 +201,46 @@ public class BCV
      *
      * @return The opened class node or a null if nothing is opened
      */
-    public static ClassNode getCurrentlyOpenedClassNode() {
-        return the.bytecode.club.bytecodeviewer.BytecodeViewer.getCurrentlyOpenedClassNode();
+    public static ClassNode getCurrentlyOpenedClassNode()
+    {
+        return BytecodeViewer.getCurrentlyOpenedClassNode();
+    }
+
+    /**
+     * Returns the currently opened class nodes ClassFile bytes
+     *
+     * @return The ClassFile bytes for the actively opened resource
+     */
+    public static byte[] getCurrentlyOpenedClassNodeBytes()
+    {
+        final ClassNode cn = BytecodeViewer.getCurrentlyOpenedClassNode();
+        final ClassWriter cw = new ClassWriter(0);
+
+        try
+        {
+            Objects.requireNonNull(cn).accept(cw);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+
+            SleepUtil.sleep(200);
+
+            Objects.requireNonNull(cn).accept(cw);
+        }
+
+        return cw.toByteArray();
+    }
+
+    /**
+     * This decompiles the actively opened ClassFile inside of BCV.
+     *
+     * @param decompiler The decompiler you would like to use
+     * @return The Ascii/text representation of the class node from the decompiler provided
+     */
+    public static String decompileCurrentlyOpenedClassNode(Decompiler decompiler)
+    {
+        return decompiler.getDecompiler().decompileClassNode(BCV.getCurrentlyOpenedClassNode(), BCV.getCurrentlyOpenedClassNodeBytes());
     }
 
     /**
@@ -178,9 +249,9 @@ public class BCV
      * @param name the full name of the ClassNode
      * @return the ClassNode
      */
-    public static ClassNode getClassNode(String name) {
-        return the.bytecode.club.bytecodeviewer.BytecodeViewer
-                .blindlySearchForClassNode(name);
+    public static ClassNode getClassNode(String name)
+    {
+        return BytecodeViewer.blindlySearchForClassNode(name);
     }
 
     /**
@@ -188,9 +259,9 @@ public class BCV
      *
      * @return the loaded classes
      */
-    public static ArrayList<ClassNode> getLoadedClasses() {
-        return the.bytecode.club.bytecodeviewer.BytecodeViewer
-                .getLoadedClasses();
+    public static List<ClassNode> getLoadedClasses()
+    {
+        return BytecodeViewer.getLoadedClasses();
     }
 
     /**
@@ -198,7 +269,8 @@ public class BCV
      *
      * @param hook
      */
-    public static void insertHook(BytecodeHook hook) {
+    public static void insertHook(BytecodeHook hook)
+    {
         EZInjection.hookArray.add(hook);
     }
 
@@ -208,8 +280,9 @@ public class BCV
      *
      * @param ask if it should ask the user about resetting the workspace
      */
-    public static void resetWorkSpace(boolean ask) {
-        the.bytecode.club.bytecodeviewer.BytecodeViewer.resetWorkspace(ask);
+    public static void resetWorkSpace(boolean ask)
+    {
+        BytecodeViewer.resetWorkspace(ask);
     }
 
     /**
@@ -218,8 +291,9 @@ public class BCV
      *
      * @param busy if it should display the busy icon or not
      */
-    public static void setBusy(boolean busy) {
-        the.bytecode.club.bytecodeviewer.BytecodeViewer.updateBusyStatus(busy);
+    public static void setBusy(boolean busy)
+    {
+        BytecodeViewer.updateBusyStatus(busy);
     }
 
     /**
@@ -227,32 +301,35 @@ public class BCV
      *
      * @param message the message you want to display
      */
-    public static void showMessage(String message) {
-        the.bytecode.club.bytecodeviewer.BytecodeViewer.showMessage(message);
+    public static void showMessage(String message)
+    {
+        BytecodeViewer.showMessage(message);
     }
 
     /**
      * Asks if the user would like to overwrite the file
      */
-    public static boolean canOverwriteFile(File file) {
+    public static boolean canOverwriteFile(File file)
+    {
         return DialogUtils.canOverwriteFile(file);
     }
-    
+
+    /**
+     * This function will hide a JFrame after a given amount of time.
+     *
+     * @param frame        Any JFrame object
+     * @param milliseconds The amount of time until it will be hidden represented in milliseconds
+     */
     public static void hideFrame(JFrame frame, long milliseconds)
     {
-        new Thread(()->{
-            long started = System.currentTimeMillis();
-            while(System.currentTimeMillis()-started <= milliseconds)
-            {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) { }
-            }
-    
+        new Thread(() ->
+        {
+            SleepUtil.sleep(milliseconds);
+
             frame.setVisible(false);
         }, "Timed Swing Hide").start();
     }
-    
+
     /**
      * Log to System.out
      */
@@ -260,16 +337,16 @@ public class BCV
     {
         log(false, s);
     }
-    
+
     /**
      * Log to System.out
      */
     public static void log(boolean devModeOnly, String s)
     {
-        if(!devModeOnly || DEV_MODE)
+        if (!devModeOnly || DEV_MODE)
             System.out.println(s);
     }
-    
+
     /**
      * Log to System.err
      */
@@ -277,13 +354,13 @@ public class BCV
     {
         logE(false, s);
     }
-    
+
     /**
      * Log to System.err
      */
     public static void logE(boolean devModeOnly, String s)
     {
-        if(!devModeOnly || DEV_MODE)
+        if (!devModeOnly || DEV_MODE)
             System.err.println(s);
     }
 
@@ -292,7 +369,8 @@ public class BCV
      *
      * @return The wrapped Krakatau Decompiler instance
      */
-    public static InternalDecompiler getKrakatauDecompiler() {
+    public static AbstractDecompiler getKrakatauDecompiler()
+    {
         return Decompiler.KRAKATAU_DECOMPILER.getDecompiler();
     }
 
@@ -301,7 +379,8 @@ public class BCV
      *
      * @return The wrapped Procyon Decompiler instance
      */
-    public static InternalDecompiler getProcyonDecompiler() {
+    public static AbstractDecompiler getProcyonDecompiler()
+    {
         return Decompiler.PROCYON_DECOMPILER.getDecompiler();
     }
 
@@ -310,7 +389,8 @@ public class BCV
      *
      * @return The wrapped CFR Decompiler instance
      */
-    public static InternalDecompiler getCFRDecompiler() {
+    public static AbstractDecompiler getCFRDecompiler()
+    {
         return Decompiler.CFR_DECOMPILER.getDecompiler();
     }
 
@@ -319,7 +399,8 @@ public class BCV
      *
      * @return The wrapped FernFlower Decompiler instance
      */
-    public static InternalDecompiler getFernFlowerDecompiler() {
+    public static AbstractDecompiler getFernFlowerDecompiler()
+    {
         return Decompiler.FERNFLOWER_DECOMPILER.getDecompiler();
     }
 
@@ -328,25 +409,28 @@ public class BCV
      *
      * @return The wrapped Krakatau Disassembler instance
      */
-    public static InternalDecompiler getKrakatauDisassembler() {
+    public static AbstractDecompiler getKrakatauDisassembler()
+    {
         return Decompiler.KRAKATAU_DISASSEMBLER.getDecompiler();
     }
-    
+
     /**
      * Returns the wrapped JD-GUI Decompiler instance.
      *
      * @return The wrapped JD-GUI Decompiler instance
      */
-    public static InternalDecompiler getDJGUIDecompiler() {
+    public static AbstractDecompiler getDJGUIDecompiler()
+    {
         return Decompiler.JD_DECOMPILER.getDecompiler();
     }
-    
+
     /**
      * Returns the wrapped JADX Decompiler instance.
      *
      * @return The wrapped JADX Decompiler instance
      */
-    public static InternalDecompiler getJADXDecompiler() {
+    public static AbstractDecompiler getJADXDecompiler()
+    {
         return Decompiler.JADX_DECOMPILER.getDecompiler();
     }
 
@@ -355,7 +439,8 @@ public class BCV
      *
      * @return The wrapped Java Compiler instance
      */
-    public static InternalCompiler getJavaCompiler() {
+    public static AbstractCompiler getJavaCompiler()
+    {
         return Compiler.JAVA_COMPILER.getCompiler();
     }
 
@@ -364,7 +449,8 @@ public class BCV
      *
      * @return The wrapped Krakatau Assembler instance
      */
-    public static InternalCompiler getKrakatauCompiler() {
+    public static AbstractCompiler getKrakatauCompiler()
+    {
         return Compiler.KRAKATAU_ASSEMBLER.getCompiler();
     }
 
@@ -373,7 +459,8 @@ public class BCV
      *
      * @return The wrapped Smali Assembler instance
      */
-    public static InternalCompiler getSmaliCompiler() {
+    public static AbstractCompiler getSmaliCompiler()
+    {
         return Compiler.SMALI_ASSEMBLER.getCompiler();
     }
 }

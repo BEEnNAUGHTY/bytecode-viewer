@@ -1,15 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.resourcelist;
-
-import the.bytecode.club.bytecodeviewer.gui.util.StringMetricsUtil;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
-
-import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import java.awt.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,26 +16,35 @@ import java.awt.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.resourcelist;
+
+import the.bytecode.club.bytecodeviewer.gui.util.StringMetricsUtil;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
+
+import javax.swing.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.*;
+
 /**
  * @author Konloch
  * @since 6/22/2021
  */
 public class ResourceTree extends JTree
 {
-	private static final long serialVersionUID = -2355167326094772096L;
+    private static final long serialVersionUID = -2355167326094772096L;
     DefaultMutableTreeNode treeRoot;
-	
-	public ResourceTree(final DefaultMutableTreeNode treeRoot)
-	{
+
+    public ResourceTree(DefaultMutableTreeNode treeRoot)
+    {
         super(treeRoot);
         this.treeRoot = treeRoot;
     }
-	
-	StringMetricsUtil m = null;
-	
-	@Override
-    public void paint(final Graphics graphics)
-	{
+
+    StringMetricsUtil m = null;
+
+    @Override
+    public void paint(Graphics graphics)
+    {
         try
         {
             Graphics2D g = (Graphics2D) graphics;
@@ -55,15 +55,12 @@ public class ResourceTree extends JTree
             }
             if (treeRoot.getChildCount() < 1)
             {
-                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                        RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                 g.setColor(new Color(0, 0, 0, 100));
                 g.fillRect(0, 0, getWidth(), getHeight());
                 g.setColor(Color.white);
                 String s = TranslatedStrings.DRAG_CLASS_JAR.toString();
-                g.drawString(s,
-                        ((int) ((getWidth() / 2) - (m.getWidth(s) / 2))),
-                        getHeight() / 2);
+                g.drawString(s, ((int) ((getWidth() / 2) - (m.getWidth(s) / 2))), getHeight() / 2);
             }
         }
         catch (InternalError | NullPointerException | ClassCastException ignored)

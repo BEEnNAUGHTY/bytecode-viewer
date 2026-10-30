@@ -1,14 +1,6 @@
-package the.bytecode.club.bytecodeviewer.decompilers.bytecode;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.FieldNode;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -24,41 +16,62 @@ import org.objectweb.asm.tree.FieldNode;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.decompilers.bytecode;
+
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.FieldNode;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Konloch
  * @author Bibl
  */
 
-public class FieldNodeDecompiler {
+public class FieldNodeDecompiler
+{
 
-    public static PrefixedStringBuilder decompile(PrefixedStringBuilder sb,
-                                                  FieldNode f) {
+    public static PrefixedStringBuilder decompile(PrefixedStringBuilder sb, FieldNode f)
+    {
         String s = getAccessString(f.access);
         sb.append(s);
+
         if (s.length() > 0)
             sb.append(" ");
+
         sb.append(Type.getType(f.desc).getClassName());
         sb.append(" ");
         sb.append(f.name);
-        if (f.value != null) {
+
+        if (f.value != null)
+        {
             sb.append(" = ");
-            if (f.value instanceof String) {
+            if (f.value instanceof String)
+            {
                 sb.append("\"");
                 sb.append(f.value);
                 sb.append("\"");
-            } else {
+            }
+            else
+            {
                 sb.append(f.value);
                 sb.append(" (");
                 sb.append(f.value.getClass().getCanonicalName());
                 sb.append(")");
             }
         }
+
         sb.append(";");
+
         return sb;
     }
 
-    private static String getAccessString(int access) {
+    private static String getAccessString(int access)
+    {
         List<String> tokens = new ArrayList<>();
+
         if ((access & Opcodes.ACC_PUBLIC) != 0)
             tokens.add("public");
         if ((access & Opcodes.ACC_PRIVATE) != 0)
@@ -77,12 +90,15 @@ public class FieldNodeDecompiler {
             tokens.add("volatile");
         if (tokens.size() == 0)
             return "";
+
         // hackery delimeters
         StringBuilder sb = new StringBuilder(tokens.get(0));
-        for (int i = 1; i < tokens.size(); i++) {
+        for (int i = 1; i < tokens.size(); i++)
+        {
             sb.append(" ");
             sb.append(tokens.get(i));
         }
+
         return sb.toString();
     }
 }

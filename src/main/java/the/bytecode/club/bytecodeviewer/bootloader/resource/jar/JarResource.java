@@ -1,10 +1,6 @@
-package the.bytecode.club.bytecodeviewer.bootloader.resource.jar;
-
-import java.util.Arrays;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,30 +16,39 @@ import java.util.Arrays;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.bootloader.resource.jar;
+
+import java.util.Arrays;
+
 /**
  * @author Bibl (don't ban me pls)
- * @created ages ago
+ * @since 19 Jul 2013
  */
-public class JarResource {
+public class JarResource
+{
 
     private final String name;
     private final byte[] data;
 
-    public JarResource(String name, byte[] data) {
+    public JarResource(String name, byte[] data)
+    {
         this.name = name;
         this.data = data;
     }
 
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
-    public byte[] getData() {
+    public byte[] getData()
+    {
         return data;
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
         result = (prime * result) + Arrays.hashCode(data);
@@ -52,7 +57,8 @@ public class JarResource {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj)
+    {
         if (this == obj)
             return true;
         if (obj == null)
@@ -62,8 +68,11 @@ public class JarResource {
         JarResource other = (JarResource) obj;
         if (!Arrays.equals(data, other.data))
             return false;
-        if (name == null) {
+        if (name == null)
+        {
             return other.name == null;
-        } else return name.equals(other.name);
+        }
+        else
+            return name.equals(other.name);
     }
 }

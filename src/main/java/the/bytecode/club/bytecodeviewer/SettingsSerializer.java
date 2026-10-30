@@ -1,21 +1,6 @@
-package the.bytecode.club.bytecodeviewer;
-
-import javax.swing.JFrame;
-
-import me.konloch.kontainer.io.DiskReader;
-import me.konloch.kontainer.io.DiskWriter;
-import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
-import the.bytecode.club.bytecodeviewer.gui.theme.LAFTheme;
-import the.bytecode.club.bytecodeviewer.gui.theme.RSTATheme;
-import the.bytecode.club.bytecodeviewer.translation.Language;
-
-import java.io.File;
-
-import static the.bytecode.club.bytecodeviewer.Constants.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -31,6 +16,22 @@ import static the.bytecode.club.bytecodeviewer.Constants.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer;
+
+import com.konloch.disklib.DiskReader;
+import com.konloch.disklib.DiskWriter;
+import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
+import the.bytecode.club.bytecodeviewer.gui.theme.LAFTheme;
+import the.bytecode.club.bytecodeviewer.gui.theme.RSTATheme;
+import the.bytecode.club.bytecodeviewer.translation.Language;
+
+import javax.swing.*;
+import java.io.File;
+import java.io.IOException;
+
+import static the.bytecode.club.bytecodeviewer.Constants.VERSION;
+import static the.bytecode.club.bytecodeviewer.Constants.SETTINGS_NAME;
+
 /**
  * Used to handle loading/saving the GUI (options).
  *
@@ -39,19 +40,23 @@ import static the.bytecode.club.bytecodeviewer.Constants.*;
 
 public class SettingsSerializer
 {
+    private static final String DEPRECATED = "deprecated";
     private static boolean settingsFileExists;
-    
+    private static String[] settings;
+
     public static void saveSettingsAsync()
     {
-        Thread saveThread = new Thread(SettingsSerializer::saveSettings, "Save Settings");
-        saveThread.start();
+        BytecodeViewer.getTaskManager().doOnce(task -> saveSettings());
     }
-    
+
     public static synchronized void saveSettings()
     {
+        if(BytecodeViewer.CLI.isCLI()) //do not save settings on CLI
+            return;
+
         try
         {
-            DiskWriter.replaceFile(settingsName, "BCV: " + VERSION, false);
+            DiskWriter.write(SETTINGS_NAME, "BCV: " + VERSION, true);
             save(BytecodeViewer.viewer.rbr.isSelected());
             save(BytecodeViewer.viewer.rsy.isSelected());
             save(BytecodeViewer.viewer.din.isSelected());
@@ -130,47 +135,47 @@ public class SettingsSerializer
             save(BytecodeViewer.viewer.excludeNestedTypes.isSelected());
             save(BytecodeViewer.viewer.appendBracketsToLabels.isSelected());
             save(BytecodeViewer.viewer.debugHelpers.isSelected());
-            save("deprecated");
+            save(DEPRECATED);
             save(BytecodeViewer.viewer.updateCheck.isSelected());
             save(BytecodeViewer.viewer.viewPane1.getSelectedDecompiler().ordinal());
             save(BytecodeViewer.viewer.viewPane2.getSelectedDecompiler().ordinal());
             save(BytecodeViewer.viewer.viewPane3.getSelectedDecompiler().ordinal());
             save(BytecodeViewer.viewer.refreshOnChange.isSelected());
             save(BytecodeViewer.viewer.isMaximized);
-            save("deprecated");
-            save("deprecated");
+            save(DEPRECATED);
+            save(DEPRECATED);
             save(Configuration.lastOpenDirectory);
             save(Configuration.python2);
             save(Configuration.rt);
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
             save(BytecodeViewer.viewer.decodeAPKResources.isSelected());
             save(Configuration.library);
             save(Configuration.pingback);
-            save("deprecated");
-            save("deprecated");
-            save("deprecated");
-            save(BytecodeViewer.viewer.fontSpinner.getValue());
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(DEPRECATED);
+            save(BytecodeViewer.viewer.getFontSize());
             save(Configuration.deleteForeignLibraries);
-    
+
             if (BytecodeViewer.viewer.apkConversionGroup.isSelected(BytecodeViewer.viewer.apkConversionDex.getModel()))
-                DiskWriter.writeNewLine(settingsName, "0");
+                DiskWriter.append(SETTINGS_NAME, "0", true);
             else if (BytecodeViewer.viewer.apkConversionGroup.isSelected(BytecodeViewer.viewer.apkConversionEnjarify.getModel()))
-                DiskWriter.writeNewLine(settingsName, "1");
-    
+                DiskWriter.append(SETTINGS_NAME, "1", true);
+
             save(Configuration.python3);
             save(Configuration.javac);
             save(Configuration.java);
@@ -182,29 +187,34 @@ public class SettingsSerializer
             save(BytecodeViewer.viewer.synchronizedViewing.isSelected());
             save(BytecodeViewer.viewer.showClassMethods.isSelected());
             save(BytecodeViewer.viewer.ren.isSelected());
-            save("deprecated");
-            
+            save(DEPRECATED);
+
             save(Configuration.lafTheme.name());
             save(Configuration.rstaTheme.name());
             save(BytecodeViewer.viewer.simplifyNameInTabTitle.isSelected());
             save(Configuration.language.name());
-            
+
             save(BytecodeViewer.viewer.viewPane1.isPaneEditable());
             save(BytecodeViewer.viewer.viewPane2.isPaneEditable());
             save(BytecodeViewer.viewer.viewPane3.isPaneEditable());
-            
+
             save(Configuration.javaTools);
-            save("deprecated");
-            save("deprecated");
+            save(DEPRECATED);
+            save(DEPRECATED);
             save(Configuration.lastSaveDirectory);
             save(Configuration.lastPluginDirectory);
             save(Configuration.python2Extra);
             save(Configuration.python3Extra);
-        } catch (Exception e) {
+            save(BytecodeViewer.viewer.getMinSdkVersion());
+            save(BytecodeViewer.viewer.printLineNumbers.isSelected());
+            save(BytecodeViewer.viewer.disableReloadConfirmation.isSelected());
+        }
+        catch (Exception e)
+        {
             BytecodeViewer.handleException(e);
         }
     }
-    
+
     /**
      * Preload data used to configure the looks and components of the application
      */
@@ -212,14 +222,14 @@ public class SettingsSerializer
     {
         try
         {
-            settingsFileExists = new File(settingsName).exists();
-            
-            if(!settingsFileExists)
+            settingsFileExists = new File(SETTINGS_NAME).exists();
+
+            if (!settingsFileExists)
                 return;
-            
+
             //precache the file
-            DiskReader.loadString(settingsName, 0, true);
-            
+            settings = DiskReader.readArray(SETTINGS_NAME);
+
             //process the cached file
             Configuration.lafTheme = LAFTheme.valueOf(asString(127));
             Configuration.rstaTheme = RSTATheme.valueOf(asString(128));
@@ -235,15 +245,19 @@ public class SettingsSerializer
             e.printStackTrace();
         }
     }
-    
+
     //utilizes the Disk Reader's caching system.
     public static void loadSettings()
     {
-        if(!settingsFileExists)
+        //do not load settings on CLI
+        if (!settingsFileExists)
             return;
-        
+
         Settings.firstBoot = false;
-        
+
+        if(BytecodeViewer.CLI.isCLI())
+            return;
+
         try
         {
             //parse the cached file from memory (from preload)
@@ -334,25 +348,28 @@ public class SettingsSerializer
             BytecodeViewer.viewer.refreshOnChange.setSelected(asBoolean(84));
 
             boolean bool = Boolean.parseBoolean(asString(85));
-            if (bool) {
+
+            if (bool)
+            {
                 BytecodeViewer.viewer.setExtendedState(JFrame.MAXIMIZED_BOTH);
                 BytecodeViewer.viewer.isMaximized = true;
             }
+
             //86 is deprecated
             //87 is deprecated
             Configuration.lastOpenDirectory = asString(88);
             Configuration.python2 = asString(89);
             Configuration.rt = asString(90);
-            
+
             BytecodeViewer.viewer.decodeAPKResources.setSelected(asBoolean(106));
             Configuration.library = asString(107);
             Configuration.pingback = asBoolean(108);
-            
+
             BytecodeViewer.viewer.fontSpinner.setValue(asInt(112));
             Configuration.deleteForeignLibraries = asBoolean(113);
-            
+
             //APK Decompiler
-            switch(asInt(114))
+            switch (asInt(114))
             {
                 case 0:
                     BytecodeViewer.viewer.apkConversionGroup.setSelected(BytecodeViewer.viewer.apkConversionDex.getModel(), true);
@@ -361,7 +378,7 @@ public class SettingsSerializer
                     BytecodeViewer.viewer.apkConversionGroup.setSelected(BytecodeViewer.viewer.apkConversionEnjarify.getModel(), true);
                     break;
             }
-    
+
             Configuration.python3 = asString(115);
             Configuration.javac = asString(116);
             Configuration.java = asString(117);
@@ -379,16 +396,17 @@ public class SettingsSerializer
             //line 128 is used for theme on preload
             BytecodeViewer.viewer.simplifyNameInTabTitle.setSelected(asBoolean(129));
             Configuration.simplifiedTabNames = BytecodeViewer.viewer.simplifyNameInTabTitle.isSelected();
-            
+
             //line 130 is used for preload
-            if(Configuration.language != Language.ENGLISH)
+            if (Configuration.language != Language.ENGLISH)
                 Configuration.language.setLanguageTranslations(); //load language translations
+
             Settings.hasSetLanguageAsSystemLanguage = true;
-            
+
             BytecodeViewer.viewer.viewPane1.setPaneEditable(asBoolean(131));
             BytecodeViewer.viewer.viewPane2.setPaneEditable(asBoolean(132));
             BytecodeViewer.viewer.viewPane3.setPaneEditable(asBoolean(133));
-            
+
             Configuration.javaTools = asString(134);
             //ignore 135
             //ignore 136
@@ -396,6 +414,9 @@ public class SettingsSerializer
             Configuration.lastPluginDirectory = asString(138);
             Configuration.python2Extra = asBoolean(139);
             Configuration.python3Extra = asBoolean(140);
+            BytecodeViewer.viewer.minSdkVersionSpinner.setValue(asInt(141));
+            BytecodeViewer.viewer.printLineNumbers.setSelected(asBoolean(142));
+            BytecodeViewer.viewer.disableReloadConfirmation.setSelected(asBoolean(143));
         }
         catch (IndexOutOfBoundsException e)
         {
@@ -406,24 +427,31 @@ public class SettingsSerializer
             e.printStackTrace();
         }
     }
-    
+
     public static void save(Object o)
     {
-        DiskWriter.writeNewLine(settingsName, String.valueOf(o), false);
+        try
+        {
+            DiskWriter.append(SETTINGS_NAME, String.valueOf(o), true);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
-    
-    public static String asString(int lineNumber) throws Exception
+
+    public static String asString(int lineNumber)
     {
-        return DiskReader.loadString(settingsName, lineNumber, false);
+        return settings[lineNumber];
     }
-    
-    public static boolean asBoolean(int lineNumber) throws Exception
+
+    public static boolean asBoolean(int lineNumber)
     {
-        return Boolean.parseBoolean(DiskReader.loadString(settingsName, lineNumber, false));
+        return Boolean.parseBoolean(settings[lineNumber]);
     }
-    
-    public static int asInt(int lineNumber) throws Exception
+
+    public static int asInt(int lineNumber)
     {
-        return Integer.parseInt(DiskReader.loadString(settingsName, lineNumber, false));
+        return Integer.parseInt(settings[lineNumber]);
     }
 }

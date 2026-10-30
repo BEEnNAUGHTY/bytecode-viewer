@@ -1,8 +1,6 @@
-package the.bytecode.club.bytecodeviewer.compilers;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,6 +16,8 @@ package the.bytecode.club.bytecodeviewer.compilers;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.compilers;
+
 import the.bytecode.club.bytecodeviewer.compilers.impl.JavaCompiler;
 import the.bytecode.club.bytecodeviewer.compilers.impl.KrakatauAssembler;
 import the.bytecode.club.bytecodeviewer.compilers.impl.SmaliAssembler;
@@ -31,14 +31,16 @@ public enum Compiler
 {
     KRAKATAU_ASSEMBLER(new KrakatauAssembler()),
     SMALI_ASSEMBLER(new SmaliAssembler()),
-    JAVA_COMPILER(new JavaCompiler()),
-    ;
-    
-    private final InternalCompiler compiler;
-    
-    Compiler(InternalCompiler compiler) {this.compiler = compiler;}
-    
-    public InternalCompiler getCompiler()
+    JAVA_COMPILER(new JavaCompiler());
+
+    private final AbstractCompiler compiler;
+
+    Compiler(AbstractCompiler compiler)
+    {
+        this.compiler = compiler;
+    }
+
+    public AbstractCompiler getCompiler()
     {
         return compiler;
     }

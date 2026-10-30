@@ -1,27 +1,6 @@
-package the.bytecode.club.bytecodeviewer.decompilers.impl;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Objects;
-import me.konloch.kontainer.io.DiskReader;
-import org.apache.commons.io.FileUtils;
-import org.objectweb.asm.tree.ClassNode;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.api.ExceptionUI;
-import the.bytecode.club.bytecodeviewer.decompilers.InternalDecompiler;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
-import the.bytecode.club.bytecodeviewer.util.Dex2Jar;
-import the.bytecode.club.bytecodeviewer.util.MiscUtils;
-
-import static the.bytecode.club.bytecodeviewer.Constants.*;
-import static the.bytecode.club.bytecodeviewer.translation.TranslatedStrings.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -37,39 +16,67 @@ import static the.bytecode.club.bytecodeviewer.translation.TranslatedStrings.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.decompilers.impl;
+
+import com.googlecode.d2j.smali.BaksmaliCmd;
+import com.konloch.disklib.DiskReader;
+import org.apache.commons.io.FileUtils;
+import org.objectweb.asm.tree.ClassNode;
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.api.ExceptionUI;
+import the.bytecode.club.bytecodeviewer.decompilers.AbstractDecompiler;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
+import the.bytecode.club.bytecodeviewer.util.apk2Jar.Dex2Jar;
+import the.bytecode.club.bytecodeviewer.util.MiscUtils;
+
+import java.io.*;
+import java.util.Objects;
+
+import static the.bytecode.club.bytecodeviewer.Constants.*;
+import static the.bytecode.club.bytecodeviewer.translation.TranslatedStrings.*;
+
 /**
  * Smali Disassembler Wrapper
  *
  * @author Konloch
  */
 
-public class SmaliDisassembler extends InternalDecompiler
+public class SmaliDisassembler extends AbstractDecompiler
 {
-    @Override
-    public String decompileClassNode(ClassNode cn, byte[] b)
+    public SmaliDisassembler()
     {
-        String exception = "";
-        String fileStart = tempDirectory + fs + "temp";
+        super("Smali Disassembler", "smali");
+    }
 
-        String start = MiscUtils.getUniqueName(fileStart, ".class");
-
+    @Override
+    public String decompileClassNode(ClassNode cn, byte[] bytes)
+    {
+        final String fileStart = TEMP_DIRECTORY + FS + "temp";
+        final String start = MiscUtils.getUniqueNameBroken(fileStart, ".class");
         final File tempClass = new File(start + ".class");
         final File tempDex = new File(start + ".dex");
+        final File tempDexOut = new File(start + "-out");
         final File tempSmali = new File(start + "-smali"); //output directory
 
-        try (FileOutputStream fos = new FileOutputStream(tempClass)) {
-            fos.write(b);
-        } catch (final IOException e) {
+        String exception = "";
+
+        try (FileOutputStream fos = new FileOutputStream(tempClass))
+        {
+            fos.write(bytes);
+        }
+        catch (IOException e)
+        {
             BytecodeViewer.handleException(e);
         }
 
-        //ZipUtils.zipFile(tempClass, tempZip);
-
         Dex2Jar.saveAsDex(tempClass, tempDex, true);
 
-        try {
-            com.googlecode.d2j.smali.BaksmaliCmd.main(new String[]{tempDex.getAbsolutePath()});
-        } catch (Exception e) {
+        try
+        {
+            BaksmaliCmd.main(tempDex.getAbsolutePath(), "-o", tempDexOut.getAbsolutePath());
+        }
+        catch (Exception e)
+        {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             e.printStackTrace();
@@ -77,11 +84,12 @@ public class SmaliDisassembler extends InternalDecompiler
             exception += ExceptionUI.SEND_STACKTRACE_TO_NL + sw;
         }
 
-        File rename = new File(tempDex.getName().replaceFirst("\\.dex", "-out"));
-
-        try {
-            FileUtils.moveDirectory(rename, tempSmali);
-        } catch (IOException e) {
+        try
+        {
+            FileUtils.moveDirectory(tempDexOut, tempSmali);
+        }
+        catch (IOException e)
+        {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             e.printStackTrace();
@@ -93,33 +101,38 @@ public class SmaliDisassembler extends InternalDecompiler
 
         boolean found = false;
         File current = tempSmali;
-        while (!found) {
+        while (!found)
+        {
             File f = Objects.requireNonNull(current.listFiles())[0];
+
             if (f.isDirectory())
                 current = f;
-            else {
+            else
+            {
                 outputSmali = f;
                 found = true;
             }
-
         }
-        try {
-            return DiskReader.loadAsString(outputSmali.getAbsolutePath());
-        } catch (Exception e) {
+        try
+        {
+            return DiskReader.readString(outputSmali.getAbsolutePath());
+        }
+        catch (Exception e)
+        {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw));
             e.printStackTrace();
 
             exception += ExceptionUI.SEND_STACKTRACE_TO_NL + sw;
         }
-        
-        return SMALI + " " + DISASSEMBLER + " " + ERROR + "! " + ExceptionUI.SEND_STACKTRACE_TO +
-                nl + nl + TranslatedStrings.SUGGESTED_FIX_DECOMPILER_ERROR +
-                nl + nl + exception;
+
+        return SMALI + " " + DISASSEMBLER + " " + ERROR + "! " + ExceptionUI.SEND_STACKTRACE_TO + NL + NL
+            + TranslatedStrings.SUGGESTED_FIX_DECOMPILER_ERROR + NL + NL + exception;
     }
 
     @Override
-    public void decompileToZip(String sourceJar, String zipName) {
+    public void decompileToZip(String sourceJar, String zipName)
+    {
 
     }
 }

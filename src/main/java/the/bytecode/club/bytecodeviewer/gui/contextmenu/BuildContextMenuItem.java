@@ -1,14 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.contextmenu;
-
-import the.bytecode.club.bytecodeviewer.gui.resourcelist.ResourceTree;
-import the.bytecode.club.bytecodeviewer.searching.LDCSearchTreeNodeResult;
-
-import javax.swing.*;
-import javax.swing.tree.TreePath;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -24,11 +16,19 @@ import javax.swing.tree.TreePath;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.contextmenu;
+
+import the.bytecode.club.bytecodeviewer.gui.resourcelist.ResourceTree;
+import the.bytecode.club.bytecodeviewer.searching.LDCSearchTreeNodeResult;
+
+import javax.swing.*;
+import javax.swing.tree.TreePath;
+
 /**
  * @author Konloch
  * @since 7/26/2021
  */
 public interface BuildContextMenuItem
 {
-	void buildMenu(ResourceTree tree, TreePath selPath, LDCSearchTreeNodeResult result, JPopupMenu menu);
+    void buildMenu(ResourceTree tree, TreePath selPath, LDCSearchTreeNodeResult result, JPopupMenu menu);
 }

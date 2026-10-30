@@ -1,14 +1,6 @@
-package the.bytecode.club.bytecodeviewer.util;
-
-import the.bytecode.club.bytecodeviewer.GlobalHotKeys;
-import the.bytecode.club.bytecodeviewer.gui.components.SearchableRSyntaxTextArea;
-
-import java.awt.*;
-import java.awt.event.KeyEvent;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -24,24 +16,32 @@ import java.awt.event.KeyEvent;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.util;
+
+import the.bytecode.club.bytecodeviewer.GlobalHotKeys;
+import the.bytecode.club.bytecodeviewer.gui.components.SearchableRSyntaxTextArea;
+
+import java.awt.*;
+import java.awt.event.KeyEvent;
+
 /**
  * @author Konloch
  * @since 6/21/2021
  */
 public class KeyEventDispatch implements KeyEventDispatcher
 {
-	@Override
-	public boolean dispatchKeyEvent(KeyEvent e)
-	{
-		//hardcoded check for searchable syntax panes, this allows specific panels to ctrl + s save externally
-		if(e.getSource() instanceof SearchableRSyntaxTextArea)
-		{
-			SearchableRSyntaxTextArea rSyntaxTextArea = (SearchableRSyntaxTextArea) e.getSource();
-			if(rSyntaxTextArea.getOnCtrlS() != null)
-				return false;
-		}
-		
-		GlobalHotKeys.keyPressed(e);
-		return false;
-	}
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e)
+    {
+        //hardcoded check for searchable syntax panes, this allows specific panels to ctrl + s save externally
+        if (e.getSource() instanceof SearchableRSyntaxTextArea)
+        {
+            SearchableRSyntaxTextArea rSyntaxTextArea = (SearchableRSyntaxTextArea) e.getSource();
+            if (rSyntaxTextArea.getOnCtrlS() != null)
+                return false;
+        }
+
+        GlobalHotKeys.keyPressed(e);
+        return false;
+    }
 }

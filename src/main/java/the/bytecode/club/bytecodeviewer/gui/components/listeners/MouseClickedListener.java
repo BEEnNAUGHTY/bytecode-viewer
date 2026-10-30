@@ -1,10 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.components.listeners;
-
-import java.awt.event.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,35 +16,33 @@ import java.awt.event.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.components.listeners;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
 /**
  * @author Konloch
  * @since 6/25/2021
  */
-public class MouseClickedListener implements MouseListener
+public class MouseClickedListener extends MouseAdapter
 {
-	private final MouseClickedEvent mouseClickedEvent;
-	
-	public MouseClickedListener(MouseClickedEvent mouseClickedEvent) {this.mouseClickedEvent = mouseClickedEvent;}
-	
-	@Override
-	public void mouseClicked(MouseEvent e) {
-		mouseClickedEvent.mouseClicked(e);
-	}
-	
-	@Override
-	public void mouseEntered(MouseEvent arg0) { }
-	
-	@Override
-	public void mouseExited(MouseEvent arg0) { }
-	
-	@Override
-	public void mousePressed(MouseEvent arg0) { }
-	
-	@Override
-	public void mouseReleased(MouseEvent e) { }
-	
-	public interface MouseClickedEvent
-	{
-		void mouseClicked(MouseEvent e);
-	}
+    private final MouseClickedEvent mouseClickedEvent;
+
+    public MouseClickedListener(MouseClickedEvent mouseClickedEvent)
+    {
+        this.mouseClickedEvent = mouseClickedEvent;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e)
+    {
+        mouseClickedEvent.mouseClicked(e);
+        super.mouseClicked(e);
+    }
+
+    public interface MouseClickedEvent
+    {
+        void mouseClicked(MouseEvent e);
+    }
 }

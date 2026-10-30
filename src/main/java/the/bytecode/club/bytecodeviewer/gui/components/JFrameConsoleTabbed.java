@@ -1,13 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.components;
-
-import the.bytecode.club.bytecodeviewer.resources.IconResources;
-
-import javax.swing.*;
-import java.awt.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,6 +16,13 @@ import java.awt.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.components;
+
+import the.bytecode.club.bytecodeviewer.resources.IconResources;
+
+import javax.swing.*;
+import java.awt.*;
+
 /**
  * @author Konloch
  * @since 7/14/2021
@@ -30,27 +30,27 @@ import java.awt.*;
 
 public class JFrameConsoleTabbed extends JFrame
 {
-	private final JTabbedPane tabbedPane;
-	
-	public JFrameConsoleTabbed(String title)
-	{
-		setIconImages(IconResources.iconList);
-		setTitle(title);
-		setSize(new Dimension(542, 316));
-		
-		tabbedPane = new JTabbedPane();
-		getContentPane().add(tabbedPane, BorderLayout.CENTER);
-		
-		this.setLocationRelativeTo(null);
-	}
-	
-	public void addConsole(Component console, String containerName)
-	{
-		tabbedPane.add(console, containerName);
-	}
-	
-	public JTabbedPane getTabbedPane()
-	{
-		return tabbedPane;
-	}
+    private final JTabbedPane tabbedPane;
+
+    public JFrameConsoleTabbed(String title)
+    {
+        setIconImages(IconResources.iconList);
+        setTitle(title);
+        setSize(new Dimension(542, 316));
+
+        tabbedPane = new JTabbedPane();
+        getContentPane().add(tabbedPane, BorderLayout.CENTER);
+
+        this.setLocationRelativeTo(null);
+    }
+
+    public void addConsole(Component console, String containerName)
+    {
+        tabbedPane.add(console, containerName);
+    }
+
+    public JTabbedPane getTabbedPane()
+    {
+        return tabbedPane;
+    }
 }

@@ -3,7 +3,10 @@
 Bytecode Viewer - a lightweight user-friendly Java/Android Bytecode Viewer, Decompiler & More.
 
 #### New Features
-* Dark mode with multiple themes
+* Jump to Declaration
+* Draggable tabs
+* Patched [CVE-2022-21675](https://github.com/Konloch/bytecode-viewer/security/advisories/GHSA-3wq9-j4fc-4wmc) (Make sure to upgrade to v2.11.X)
+* Dark mode by default with multiple themes
 * Translated into over 30 languages including: Arabic, German, Japanese, Mandarin, Russian, Spanish
 * Plugin Writer - create and edit external plugins from within BCV
 * Fixed Java & Bytecode editing/compiling
@@ -11,14 +14,9 @@ Bytecode Viewer - a lightweight user-friendly Java/Android Bytecode Viewer, Deco
 * Right-click menus on the resource and search panels
 * Javap disassembler
 * XAPK support
-* Updated nearly all dependencies (incl. decompilers like CFR, JD-GUI etc.)
-* Updated ASM library to version 9.1
+* Latest dependencies (incl. decompilers like CFR, JD-GUI etc.)
 * Added support to Java files compiled using JDK > 13
 * Migrated to Maven
-
-#### v2.10.x Notes
-* The rewrite/refactoring process is currently ongoing so please report any bugs you find
-* If you're encountering any issues try using [v2.9.22](https://github.com/Konloch/bytecode-viewer/releases/tag/v2.9.22)
 
 #### Links
 * [BCV Discord](https://discord.gg/aexsYpfMEf)
@@ -34,7 +32,7 @@ Bytecode Viewer - a lightweight user-friendly Java/Android Bytecode Viewer, Deco
 
 #### Key Features
 * Simply drag and drop to decompile and search Java Jars & Android APKs
-* File format support for: Class, Jar, XAPK, APK, DEX, WAR, JSP, Image Resources, Text Resources & More
+* File format support for: Class, Jar, APK, DEX, XAPK, APKM, WAR, JSP, Image Resources, Text Resources & More
 * 6 Built-in Java decompilers: Krakatau, CFR, Procyon, FernFlower, JADX, JD-GUI
 * 3 Built-in Bytecode disassemblers, including 2 assemblers: Krakatau and Smali/BakSmali
 * APK/DEX Support from Dex2Jar and Enjarify
@@ -77,7 +75,7 @@ Download the latest version from https://github.com/konloch/bytecode-viewer/rele
 You may need to execute it via command line ```java -jar Bytecode-Viewer-2.10.x.jar``` (replace the X with the current minor version)
 
 ## How can I use BCV?
-* Starting with a Jar, Zip, ClassFile or Android file (APK, DEX, XAPK, etc) drag it into BCV. It will start the decoding process automatically.
+* Starting with a Jar, Zip, ClassFile or Android file (APK, DEX, XAPK, APKM, etc) drag it into BCV. It will start the decoding process automatically.
 * From here you can select the decompilers you would like to use by selecting the View Pane>View 1, View 2, View 3, etc.
 * The view panes are-used to display up to 3 decompilers side by side, you can also toggle edibility here.
 * Select the resource you would like to open by navigating using the resource list, BCV will do its best to display it (Decompiling, Disassembling, etc).
@@ -97,6 +95,9 @@ Just clone this repo and run ``mvn package``. It's that simple!
 ## Working on the source
 
 Open the Maven project (e.g. in IntelliJ, open the ``pom.xml`` as a project file).
+
+## UI Is Lagging
+Change the theme to your systems. Go into `View->Visual Settings->Window Theme` and select `System Theme`.
 
 ## Java Heap Space Issues (java.lang.OutOfMemoryError)
 Start BCV with more RAM, e.g. `java -Xmx3G -jar BCV.jar`

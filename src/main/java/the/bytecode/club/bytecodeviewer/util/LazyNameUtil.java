@@ -1,12 +1,6 @@
-package the.bytecode.club.bytecodeviewer.util;
-
-import java.util.HashMap;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,6 +16,14 @@ import org.apache.commons.lang3.StringUtils;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.util;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Prevents name path collisions by allowing the same name to be used in multiple resource containers.
  *
@@ -29,28 +31,27 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class LazyNameUtil
 {
-    public static boolean SAME_NAME_JAR_WORKSPACE = false;
-    private static final HashMap<String, SeqAndCount> nameMap = new HashMap<>();
+    public static boolean sameNameJarWorkspace = false;
+    private static final Map<String, SeqAndCount> NAME_MAP = new HashMap<>();
 
-    public static void reset() {
-        nameMap.clear();
+    public static void reset()
+    {
+        NAME_MAP.clear();
     }
 
     public static String applyNameChanges(String name)
     {
-        if (nameMap.containsKey(name))
+        if (NAME_MAP.containsKey(name))
         {
-            if (!SAME_NAME_JAR_WORKSPACE)
-                SAME_NAME_JAR_WORKSPACE = true;
+            if (!sameNameJarWorkspace)
+                sameNameJarWorkspace = true;
 
-            SeqAndCount seqAndCount = nameMap.get(name);
-            nameMap.put(name, seqAndCount.incrSeqAndCount());
+            SeqAndCount seqAndCount = NAME_MAP.get(name);
+            NAME_MAP.put(name, seqAndCount.incrSeqAndCount());
             return FilenameUtils.removeExtension(name) + "#" + seqAndCount.getSeq() + "." + FilenameUtils.getExtension(name);
         }
         else
-        {
-            nameMap.put(name, SeqAndCount.init());
-        }
+            NAME_MAP.put(name, SeqAndCount.init());
 
         return name;
     }
@@ -63,15 +64,15 @@ public class LazyNameUtil
         if (name.contains("#"))
             name = name.substring(0, name.indexOf("#")) + name.substring(name.indexOf("."));
 
-        SeqAndCount seqAndCount = nameMap.get(name);
+        SeqAndCount seqAndCount = NAME_MAP.get(name);
         if (seqAndCount == null)
             return;
 
         // sequence remain the same and decrease the count
         // still the count become 1
         if (seqAndCount.getCount() == 1)
-            nameMap.remove(name);
+            NAME_MAP.remove(name);
         else
-            nameMap.put(name, seqAndCount.decrCount());
+            NAME_MAP.put(name, seqAndCount.decrCount());
     }
 }

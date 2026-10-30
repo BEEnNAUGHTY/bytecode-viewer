@@ -1,41 +1,6 @@
-package the.bytecode.club.bytecodeviewer;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import javax.swing.*;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.apache.commons.io.FileUtils;
-import org.objectweb.asm.tree.ClassNode;
-
-import me.konloch.kontainer.io.DiskReader;
-
-import the.bytecode.club.bytecodeviewer.api.BCV;
-import the.bytecode.club.bytecodeviewer.api.ExceptionUI;
-import the.bytecode.club.bytecodeviewer.bootloader.Boot;
-import the.bytecode.club.bytecodeviewer.bootloader.BootState;
-import the.bytecode.club.bytecodeviewer.bootloader.InstallFatJar;
-import the.bytecode.club.bytecodeviewer.bootloader.UpdateCheck;
-import the.bytecode.club.bytecodeviewer.gui.MainViewerGUI;
-import the.bytecode.club.bytecodeviewer.gui.components.*;
-import the.bytecode.club.bytecodeviewer.gui.resourceviewer.TabbedPane;
-import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ClassViewer;
-import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ResourceViewer;
-import the.bytecode.club.bytecodeviewer.plugin.PluginWriter;
-import the.bytecode.club.bytecodeviewer.obfuscators.mapping.Refactorer;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
-import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
-import the.bytecode.club.bytecodeviewer.resources.importing.ImportResource;
-import the.bytecode.club.bytecodeviewer.util.*;
-
-import static javax.swing.JOptionPane.QUESTION_MESSAGE;
-import static the.bytecode.club.bytecodeviewer.Constants.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -51,47 +16,83 @@ import static the.bytecode.club.bytecodeviewer.Constants.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.konloch.disklib.DiskReader;
+import com.konloch.taskmanager.TaskManager;
+import org.apache.commons.io.FileUtils;
+import org.objectweb.asm.tree.ClassNode;
+import the.bytecode.club.bytecodeviewer.api.BCV;
+import the.bytecode.club.bytecodeviewer.api.ExceptionUI;
+import the.bytecode.club.bytecodeviewer.bootloader.Boot;
+import the.bytecode.club.bytecodeviewer.bootloader.BootState;
+import the.bytecode.club.bytecodeviewer.bootloader.InstallFatJar;
+import the.bytecode.club.bytecodeviewer.bootloader.UpdateCheck;
+import the.bytecode.club.bytecodeviewer.cli.BCVCommandLine;
+import the.bytecode.club.bytecodeviewer.cli.CLICommand;
+import the.bytecode.club.bytecodeviewer.gui.MainViewerGUI;
+import the.bytecode.club.bytecodeviewer.gui.components.ExtendedJOptionPane;
+import the.bytecode.club.bytecodeviewer.gui.components.MultipleChoiceDialog;
+import the.bytecode.club.bytecodeviewer.gui.components.SearchableJTextArea;
+import the.bytecode.club.bytecodeviewer.gui.components.SearchableRSyntaxTextArea;
+import the.bytecode.club.bytecodeviewer.gui.resourcelist.ResourceListIconRenderer;
+import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ClassViewer;
+import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ResourceViewer;
+import the.bytecode.club.bytecodeviewer.plugin.PluginWriter;
+import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
+import the.bytecode.club.bytecodeviewer.resources.importing.ImportResource;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
+import the.bytecode.club.bytecodeviewer.util.*;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.*;
+
+import static javax.swing.JOptionPane.QUESTION_MESSAGE;
+import static the.bytecode.club.bytecodeviewer.Constants.*;
+
 /**
  * A lightweight Java Reverse Engineering suite, developed by Konloch - http://konloch.me
- *
+ * <p>
  * All you have to do is add a jar or class file into the workspace,
  * select the file you want then it will start decompiling the class in the background.
  * When it's done it will show the Source code, Bytecode and Hexcode of the class file you chose.
- *
+ * <p>
  * There is also a plugin system that will allow you to interact with the loaded classfiles.
  * For example you can write a String deobfuscator, a malicious code searcher,
  * or anything else you can think of.
- *
+ * <p>
  * You can either use one of the pre-written plugins, or write your own. It supports java scripting.
  * Once a plugin is activated, it will send a ClassNode ArrayList of every single class loaded in the
  * file system to the execute function, this allows the user to handle it completely using ASM.
- *
+ * <p>
  * Are you a Java Reverse Engineer? Or maybe you want to learn Java Reverse Engineering?
  * Join The Bytecode Club, we're noob friendly, and censorship free.
  * http://the.bytecode.club
- *
+ * <p>
  * TODO BUGS:
  *      + View>Visual Settings>Show Class Methods
  *      + Spam-clicking the refresh button will cause the swing thread to deadlock (Quickly opening resources used to also do this)
  *          This is caused by the ctrlMouseWheelZoom code, a temporary patch is just removing it worst case
- *
+ * <p>
  * TODO API BUGS:
  *      + All of the plugins that modify code need to include BytecodeViewer.updateAllClassNodeByteArrays();
  *      + All of the plugins that do any code changes should also include BytecodeViewer.refreshAllTabs();
  *      + Anything using getLoadedClasses() needs to be replaced with the new API
  *      + Anything using blindlySearchForClassNode() should instead search through the resource container search function
  *      + BCV's classLoader should be destroyed each time a resource is added or removed
- *
- * TODO DarkLAF Specific Bugs:
- *      + Resource List creates swing lag with large project
- *      + JMenuBar can only be displayed on a JFrame, a work around is needed for this (Partially solved)
- *
+ * <p>
  * TODO IN-PROGRESS:
  *      + Resource Exporter/Save/Decompile As Zip needs to be rewritten
  *      + Finish dragging code
  *      + Finish right-click tab menu detection
  *      + Fix hook inject for EZ-Injection
- *
+ * <p>
  * TODO FEATURES:
  *      + On refresh save scroll position
  *      + Option to only compile currently viewed class (true by default)
@@ -103,7 +104,7 @@ import static the.bytecode.club.bytecodeviewer.Constants.*;
  *      + Add decompile all as zip for CLI
  *      + Console on the Main Viewer UI
  *      + Font settings
- *
+ * <p>
  *  TODO IDEAS:
  *      + App Bundle Support
  *      + Add JEB decompiler optionally, requires them to add jeb library jar
@@ -122,36 +123,35 @@ import static the.bytecode.club.bytecodeviewer.Constants.*;
 
 public class BytecodeViewer
 {
-    //TODO fix this for tab dragging & better tab controls
-    public static boolean EXPERIMENTAL_TAB_CODE = false;
-    
+
     //the launch args called on BCV
     public static String[] launchArgs;
-    
+
     //the GUI reference
     public static MainViewerGUI viewer;
-    
+
     //All of the opened resources (Files/Classes/Etc)
-    public static LinkedHashMap<String,ResourceContainer> resourceContainers = new LinkedHashMap<>();
-    
+    public static Map<String, ResourceContainer> resourceContainers = new LinkedHashMap<>();
+
     //All of the created processes (Decompilers/etc)
     public static List<Process> createdProcesses = new ArrayList<>();
-    
+
     //Security Manager for dynamic analysis debugging
     public static SecurityMan sm = new SecurityMan();
-    
-    //Refactorer
-    public static Refactorer refactorer = new Refactorer();
-    
+
     //GSON Reference
-    public static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    
+    public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    //BCV CLI
+    public static final BCVCommandLine CLI = new BCVCommandLine();
+
     //Threads
-    private static final Thread versionChecker = new Thread(new UpdateCheck(), "Version Checker");
-    private static final Thread pingBack = new Thread(new PingBack(), "Pingback");
-    private static final Thread installFatJar = new Thread(new InstallFatJar(), "Install Fat-Jar");
-    private static final Thread bootCheck = new Thread(new BootCheck(), "Boot Check");
-    
+    private static final Thread VERSION_CHECKER = new Thread(new UpdateCheck(), "Version Checker");
+    private static final Thread PING_BACK = new Thread(new PingBack(), "Pingback");
+    private static final Thread INSTALL_FAT_JAR = new Thread(new InstallFatJar(), "Install Fat-Jar");
+    private static final Thread BOOT_CHECK = new Thread(new BootCheck(), "Boot Check");
+    private static final TaskManager TASK_MANAGER = new TaskManager();
+
     /**
      * Main startup
      *
@@ -159,68 +159,80 @@ public class BytecodeViewer
      */
     public static void main(String[] args)
     {
+        // Fixes https://github.com/Konloch/bytecode-viewer/issues/388
+        System.setProperty("sun.java2d.opengl", "true");
+
         launchArgs = args;
-        
-        //welcome message
+
+        //CLI startup banner
         System.out.print("Bytecode Viewer " + VERSION);
+
         if (FAT_JAR)
             System.out.print(" [Fat Jar]");
-        
-        System.out.println(" - Created by @Konloch");
-        System.out.println("https://bytecodeviewer.com - https://the.bytecode.club");
-        
-        //set the security manager
-        System.setSecurityManager(sm);
-        
+
+        System.out.println(" - https://bytecodeviewer.com\r\nCreated by @Konloch - https://konloch.com\r\nPresented by https://the.bytecode.club");
+
+        // Set the security manager
+        try
+        {
+            System.setSecurityManager(sm);
+        }
+        catch (Throwable t)
+        {
+            System.err.println("Cannot set security manager! Are you on Java 18+ and have not enabled support for it?");
+            System.err.println("Because of this, you may be susceptible to some exploits!");
+            System.err.println("Either deal with it or allow it using the -Djava.security.manager=allow parameter.");
+        }
+
+        //init the CLI
+        CLI.init(launchArgs);
+
         try
         {
             //precache settings file
             SettingsSerializer.preloadSettingsFile();
-            
+
             //setup look and feel
-            Configuration.lafTheme.setLAF();
-            
+            if(!CLI.isCLI())
+                Configuration.lafTheme.setLAF();
+
             //set swing specific system properties
             System.setProperty("swing.aatext", "true");
-            
+
             //setup swing components
-            viewer = new MainViewerGUI();
-            SwingUtilities.updateComponentTreeUI(viewer);
-            
+            if(!CLI.isCLI())
+            {
+                // Enable the native menu bar on macOS
+                System.setProperty("apple.laf.useScreenMenuBar", "true");
+
+                viewer = new MainViewerGUI();
+                //SwingUtilities.updateComponentTreeUI(viewer);
+            }
+
             //load settings and set swing components state
             SettingsSerializer.loadSettings();
             Configuration.bootState = BootState.SETTINGS_LOADED;
-            
+
             //set translation language
             if (!Settings.hasSetLanguageAsSystemLanguage)
                 MiscUtils.setLanguage(MiscUtils.guessLanguage());
-    
-            //handle CLI
-            int CLI = CommandLineInput.parseCommandLine(args);
-            if (CLI == CommandLineInput.STOP)
-                return;
-    
+
             //load with shaded libraries
             if (FAT_JAR)
             {
-                installFatJar.start();
+                INSTALL_FAT_JAR.start();
             }
             else //load through bootloader
             {
-                bootCheck.start();
-                Boot.boot(args, CLI != CommandLineInput.GUI);
+                BOOT_CHECK.start();
+                Boot.boot(args);
             }
-            
+
             //CLI arguments say spawn the GUI
-            if (CLI == CommandLineInput.GUI)
+            if(!CLI.isCLI())
             {
-                BytecodeViewer.boot(false);
+                BytecodeViewer.boot();
                 Configuration.bootState = BootState.GUI_SHOWING;
-            }
-            else //CLI arguments say keep it CLI
-            {
-                BytecodeViewer.boot(true);
-                CommandLineInput.executeCommandLine(args);
             }
         }
         catch (Exception e)
@@ -228,62 +240,79 @@ public class BytecodeViewer
             BytecodeViewer.handleException(e);
         }
     }
-    
+
     /**
      * Boot after all of the libraries have been loaded
-     *
-     * @param cli is it running CLI mode or not
      */
-    public static void boot(boolean cli)
+    public static void boot()
     {
         //delete files in the temp folder
         cleanupAsync();
-        
+
         //shutdown hooks
         Runtime.getRuntime().addShutdownHook(new Thread(() ->
         {
             for (Process proc : createdProcesses)
                 proc.destroy();
-            
+
             SettingsSerializer.saveSettings();
             cleanup();
         }, "Shutdown Hook"));
-    
+
+        //start the background task manager
+        TASK_MANAGER.start();
+
         //setup the viewer
         viewer.calledAfterLoad();
-        
+
         //setup the recent files
         Settings.resetRecentFilesMenu();
-    
+
         //ping back once on first boot to add to global user count
         if (!Configuration.pingback)
         {
-            pingBack.start();
+            PING_BACK.start();
             Configuration.pingback = true;
         }
-        
+
         //version checking
         if (viewer.updateCheck.isSelected() && !DEV_MODE)
-            versionChecker.start();
-    
+            VERSION_CHECKER.start();
+
         //show the main UI
-        if (!cli)
-            viewer.setVisible(true);
-    
+        viewer.setVisible(true);
+
         //print startup time
-        System.out.println("Start up took " + ((System.currentTimeMillis() - Configuration.start) / 1000) + " seconds");
-        
+        System.out.println("Start up took " + ((System.currentTimeMillis() - Configuration.BOOT_TIMESTAMP) / 1000) + " seconds");
+
         //request focus on GUI for hotkeys on start
-        if (!cli)
-            viewer.requestFocus();
-        
+        viewer.requestFocus();
+
         //open files from launch args
-        if (!cli)
-            if (launchArgs.length >= 1)
-                for (String s : launchArgs)
-                    openFiles(new File[]{new File(s)}, true);
+        openFilesFromLaunchArguments();
     }
-    
+
+    private static void openFilesFromLaunchArguments()
+    {
+        if(launchArgs.length < 1)
+            return;
+
+        //parse input for commands
+        for (int i = 0; i < launchArgs.length; i++)
+        {
+            String fileInput = launchArgs[i];
+            CLICommand command = CLI.getCommand(fileInput);
+
+            if (command != null)
+            {
+                if(command.hasArgs)
+                    i++;
+            }
+            else
+                openFiles(new File[]{new File(fileInput)}, true);
+        }
+    }
+
     /**
      * Adds a resource container to BCVs resource container list
      */
@@ -292,14 +321,17 @@ public class BytecodeViewer
         resourceContainers.put(container.name, container);
         SwingUtilities.invokeLater(() ->
         {
-            try {
+            try
+            {
                 viewer.resourcePane.addResourceContainer(container);
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 e.printStackTrace();
             }
         });
     }
-    
+
     /**
      * Returns true if there is at least one file resource loaded
      */
@@ -307,7 +339,7 @@ public class BytecodeViewer
     {
         return !resourceContainers.isEmpty();
     }
-    
+
     /**
      * Returns true if there is currently a tab open with a resource inside of it
      */
@@ -315,7 +347,7 @@ public class BytecodeViewer
     {
         return getActiveResource() != null;
     }
-    
+
     /**
      * Returns true if there is currently a tab open with a resource inside of it
      */
@@ -324,7 +356,7 @@ public class BytecodeViewer
         ResourceViewer resource = getActiveResource();
         return resource instanceof ClassViewer;
     }
-    
+
     /**
      * Returns the currently opened & viewed resource
      */
@@ -332,7 +364,7 @@ public class BytecodeViewer
     {
         return BytecodeViewer.viewer.workPane.getActiveResource();
     }
-    
+
     /**
      * Returns the currently opened ClassNode
      *
@@ -340,9 +372,25 @@ public class BytecodeViewer
      */
     public static ClassNode getCurrentlyOpenedClassNode()
     {
-        return getActiveResource().resource.getResourceClassNode();
+        return getActiveClass().resource.getResourceClassNode();
     }
-    
+
+    /**
+     * Returns the last opened resource class
+     */
+    public static ResourceViewer getActiveClass()
+    {
+        return BytecodeViewer.viewer.workPane.getLastActiveClass();
+    }
+
+    /**
+     * Returns true if the active class is not null
+     */
+    public static boolean isActiveClassActive()
+    {
+        return getActiveClass() != null;
+    }
+
     /**
      * Returns the ClassNode by the specified name
      * <p>
@@ -357,14 +405,14 @@ public class BytecodeViewer
         for (ResourceContainer container : resourceContainers.values())
         {
             ClassNode node = container.getClassNode(name);
-            
+
             if (node != null)
                 return node;
         }
-    
+
         return null;
     }
-    
+
     /**
      * Returns the resource container by the specific name
      */
@@ -373,10 +421,10 @@ public class BytecodeViewer
         for (ResourceContainer container : resourceContainers.values())
             if (container.name.equals(name))
                 return container;
-    
+
         return null;
     }
-    
+
     /**
      * Returns all of the loaded resource containers
      */
@@ -384,7 +432,7 @@ public class BytecodeViewer
     {
         return resourceContainers.values();
     }
-    
+
     /**
      * Grabs the file contents of the loaded resources.
      * <p>
@@ -399,10 +447,10 @@ public class BytecodeViewer
         for (ResourceContainer container : resourceContainers.values())
             if (container.resourceFiles.containsKey(name))
                 return container.resourceFiles.get(name);
-    
+
         return null;
     }
-    
+
     /**
      * Grab the byte array from the loaded Class object by getting the resource from the classloader
      */
@@ -410,10 +458,10 @@ public class BytecodeViewer
     {
         return ClassFileUtils.getClassFileBytes(clazz);
     }
-    
+
     /**
      * Gets all of the loaded classes as an array list
-     *
+     * <p>
      * TODO: remove this and replace it with:
      * BytecodeViewer.getResourceContainers().forEach(container -> {
      *      execute(new ArrayList<>(container.resourceClasses.values()));
@@ -422,18 +470,18 @@ public class BytecodeViewer
      * @return the loaded classes as an array list
      */
     @Deprecated
-    public static ArrayList<ClassNode> getLoadedClasses()
+    public static List<ClassNode> getLoadedClasses()
     {
-        ArrayList<ClassNode> a = new ArrayList<>();
-    
+        List<ClassNode> a = new ArrayList<>();
+
         for (ResourceContainer container : resourceContainers.values())
             for (ClassNode c : container.resourceClasses.values())
                 if (!a.contains(c))
                     a.add(c);
-    
+
         return a;
     }
-    
+
     /**
      * Called any time refresh is called to automatically compile all of the compilable panes that're opened.
      */
@@ -441,7 +489,7 @@ public class BytecodeViewer
     {
         if (!BytecodeViewer.viewer.autoCompileOnRefresh.isSelected())
             return true;
-        
+
         try
         {
             return compile(false, false);
@@ -451,7 +499,7 @@ public class BytecodeViewer
             return false;
         }
     }
-    
+
     /**
      * Compile all of the compilable panes that're opened.
      *
@@ -463,20 +511,20 @@ public class BytecodeViewer
         BytecodeViewer.updateBusyStatus(true);
         boolean noErrors = true;
         boolean actuallyTried = false;
-    
+
         for (java.awt.Component c : BytecodeViewer.viewer.workPane.getLoadedViewers())
         {
             if (c instanceof ClassViewer)
             {
                 ClassViewer cv = (ClassViewer) c;
-                
+
                 if (noErrors && !cv.bytecodeViewPanel1.compile())
                     noErrors = false;
                 if (noErrors && !cv.bytecodeViewPanel2.compile())
                     noErrors = false;
                 if (noErrors && !cv.bytecodeViewPanel3.compile())
                     noErrors = false;
-                
+
                 if (cv.bytecodeViewPanel1.textArea != null && cv.bytecodeViewPanel1.textArea.isEditable())
                     actuallyTried = true;
                 if (cv.bytecodeViewPanel2.textArea != null && cv.bytecodeViewPanel2.textArea.isEditable())
@@ -485,7 +533,7 @@ public class BytecodeViewer
                     actuallyTried = true;
             }
         }
-    
+
         if (message)
         {
             if (actuallyTried)
@@ -498,34 +546,34 @@ public class BytecodeViewer
                 BytecodeViewer.showMessage("You have no editable panes opened, make one editable and try again.");
             }
         }
-        
+
         BytecodeViewer.updateBusyStatus(false);
         return true;
     }
-    
+
     /**
      * Opens a file, optional if it should append to the recent files menu
      *
      * @param files       the file(s) you wish to open
      * @param recentFiles if it should append to the recent files menu
      */
-    public static void openFiles(final File[] files, boolean recentFiles)
+    public static void openFiles(File[] files, boolean recentFiles)
     {
         if (recentFiles)
         {
             for (File f : files)
                 if (f.exists())
                     Settings.addRecentFile(f);
-    
+
             SettingsSerializer.saveSettingsAsync();
         }
-    
+
         BytecodeViewer.updateBusyStatus(true);
         Configuration.needsReDump = true;
         Thread t = new Thread(new ImportResource(files), "Import Resource");
         t.start();
     }
-    
+
     /**
      * Starts the specified plugin
      *
@@ -539,10 +587,10 @@ public class BytecodeViewer
             Settings.removeRecentPlugin(file);
             return;
         }
-        
+
         try
         {
-            PluginWriter writer = new PluginWriter(DiskReader.loadAsString(file.getAbsolutePath()), file.getName());
+            PluginWriter writer = new PluginWriter(DiskReader.readString(file.getAbsolutePath()), file.getName());
             writer.setSourceFile(file);
             writer.setVisible(true);
         }
@@ -550,10 +598,20 @@ public class BytecodeViewer
         {
             BytecodeViewer.handleException(e);
         }
-        
+
         Settings.addRecentPlugin(file);
     }
-    
+
+    /**
+     * Returns the Task Manager
+     *
+     * @return the global task manager object
+     */
+    public static TaskManager getTaskManager()
+    {
+        return TASK_MANAGER;
+    }
+
     /**
      * Send a message to alert the user
      *
@@ -563,7 +621,7 @@ public class BytecodeViewer
     {
         ExtendedJOptionPane.showMessageDialog(viewer, message);
     }
-    
+
     /**
      * Send a message to alert the user
      */
@@ -571,16 +629,15 @@ public class BytecodeViewer
     {
         return ExtendedJOptionPane.showInputDialog(viewer, message);
     }
-    
+
     /**
      * Send a message to alert the user
      */
     public static String showInput(String message, String title, String initialMessage)
     {
-        return (String) ExtendedJOptionPane.showInputDialog(viewer, message, title,
-                QUESTION_MESSAGE, null, null, initialMessage);
+        return (String) ExtendedJOptionPane.showInputDialog(viewer, message, title, QUESTION_MESSAGE, null, null, initialMessage);
     }
-    
+
     /**
      * Alerts the user the program is running something in the background
      */
@@ -588,7 +645,7 @@ public class BytecodeViewer
     {
         viewer.updateBusyStatus(busyStatus);
     }
-    
+
     /**
      * Clears all active busy status icons
      */
@@ -596,7 +653,7 @@ public class BytecodeViewer
     {
         viewer.clearBusyStatus();
     }
-    
+
     /**
      * Returns true if there are no loaded resource classes
      */
@@ -607,10 +664,10 @@ public class BytecodeViewer
             BytecodeViewer.showMessage(TranslatedStrings.FIRST_OPEN_A_CLASS.toString());
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
      * Returns true if there are no loaded resource classes
      */
@@ -621,10 +678,10 @@ public class BytecodeViewer
             BytecodeViewer.showMessage(TranslatedStrings.FIRST_OPEN_A_RESOURCE.toString());
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
      * Handle the exception by creating a new window for bug reporting
      */
@@ -632,15 +689,18 @@ public class BytecodeViewer
     {
         handleException(t, ExceptionUI.KONLOCH);
     }
-    
+
     /**
      * Handle the exception by creating a new window for bug reporting
      */
     public static void handleException(Throwable t, String author)
     {
-        new ExceptionUI(t, author);
+        if(CLI.isCLI())
+            t.printStackTrace();
+        else
+            new ExceptionUI(t, author);
     }
-    
+
     /**
      * Refreshes the title on all of the opened tabs
      */
@@ -648,32 +708,35 @@ public class BytecodeViewer
     {
         resourceContainers.values().forEach(ResourceContainer::updateClassNodeBytes);
     }
-    
+
     /**
      * Refreshes the title on all of the opened tabs
      */
     public static void refreshAllTabTitles()
     {
-        for(int i = 0; i < BytecodeViewer.viewer.workPane.tabs.getTabCount(); i++)
+        for (int i = 0; i < BytecodeViewer.viewer.workPane.tabs.getTabCount(); i++)
         {
-            ResourceViewer viewer = ((TabbedPane) BytecodeViewer.viewer.workPane.tabs.getTabComponentAt(i)).resource;
-            viewer.refreshTitle();
+            //ResourceViewer viewer = ((TabbedPane) BytecodeViewer.viewer.workPane.tabs.getTabComponentAt(i)).resource;
+            //viewer.refreshTitle();
+            //TODO
         }
     }
-    
+
     /**
-     * Refreshes the title on all of the opened tabs
+     * Refreshes all the opened tabs
      */
     public static void refreshAllTabs()
     {
-        new Thread(()->
+        new Thread(() ->
         {
             updateBusyStatus(true);
+
             for (int i = 0; i < BytecodeViewer.viewer.workPane.tabs.getTabCount(); i++)
             {
-                ResourceViewer viewer = ((TabbedPane) BytecodeViewer.viewer.workPane.tabs.getTabComponentAt(i)).resource;
+                ResourceViewer viewer = (ResourceViewer) BytecodeViewer.viewer.workPane.tabs.getComponentAt(i);
                 viewer.refresh(null);
             }
+
             updateBusyStatus(false);
         }, "Refresh All Tabs").start();
     }
@@ -687,17 +750,16 @@ public class BytecodeViewer
     {
         if (ask)
         {
-            MultipleChoiceDialog dialog = new MultipleChoiceDialog(TranslatedStrings.RESET_TITLE.toString(),
-                    TranslatedStrings.RESET_CONFIRM.toString(),
-                    new String[]{TranslatedStrings.YES.toString(), TranslatedStrings.NO.toString()});
-        
+            MultipleChoiceDialog dialog = new MultipleChoiceDialog(TranslatedStrings.RESET_TITLE.toString(), TranslatedStrings.RESET_CONFIRM.toString(),
+                new String[]{TranslatedStrings.YES.toString(), TranslatedStrings.NO.toString()});
+
             if (dialog.promptChoice() != 0)
                 return;
         }
-    
+
         resetWorkspace();
     }
-    
+
     /**
      * Resets the workspace
      */
@@ -709,8 +771,9 @@ public class BytecodeViewer
         BytecodeViewer.viewer.workPane.resetWorkspace();
         BytecodeViewer.viewer.searchBoxPane.resetWorkspace();
         BCV.getClassNodeLoader().clear();
+        ResourceListIconRenderer.iconCache.clear();
     }
-    
+
     /**
      * Clears the temp directory
      */
@@ -725,18 +788,55 @@ public class BytecodeViewer
      */
     public static void cleanup()
     {
-        File tempF = new File(tempDirectory);
+        File tempF = new File(TEMP_DIRECTORY);
 
-        try {
+        try
+        {
             FileUtils.deleteDirectory(tempF);
-        } catch (Exception ignored) { }
+        }
+        catch (Exception ignored)
+        {
+        }
 
         while (!tempF.exists()) // keep making dirs
             tempF.mkdir();
     }
-    
+
     /**
      * because Smali and Baksmali System.exit if it failed
      */
-    public static void exit(int i) { }
+    public static void exit(int i)
+    {
+    }
+
+    /**
+     * Updates all UI components fonts.
+     *
+     * @param font The font to change everything to.
+     * @implNote {@link SearchableRSyntaxTextArea} and {@link SearchableJTextArea}
+     * do not update until "Refresh" button is clicked.
+     */
+    public static void updateAllFonts(Font font)
+    {
+        Enumeration<Object> enumeration = UIManager.getDefaults().keys();
+        while (enumeration.hasMoreElements())
+        {
+            Object key = enumeration.nextElement();
+            Object value = UIManager.get(key);
+
+            if (value instanceof Font)
+                UIManager.put(key, font);
+        }
+    }
+
+    /**
+     * Updates all swing components.
+     */
+    public static void updateUI()
+    {
+        for (Window w : Window.getWindows())
+        {
+            SwingUtilities.updateComponentTreeUI(w);
+        }
+    }
 }

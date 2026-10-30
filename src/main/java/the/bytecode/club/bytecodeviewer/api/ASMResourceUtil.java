@@ -1,19 +1,6 @@
-package the.bytecode.club.bytecodeviewer.api;
-
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InnerClassNode;
-import org.objectweb.asm.tree.LocalVariableNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TypeInsnNode;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -29,6 +16,11 @@ import the.bytecode.club.bytecodeviewer.BytecodeViewer;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.api;
+
+import org.objectweb.asm.tree.*;
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+
 /**
  * Used to interact with classnodes loaded inside of BCV as resources
  *
@@ -38,7 +30,7 @@ import the.bytecode.club.bytecodeviewer.BytecodeViewer;
 public final class ASMResourceUtil
 {
     /**
-     * Attempts to a method main inside of the loaded resources and returns the fully qualified name
+     * Attempts to a method main inside the loaded resources and returns the fully qualified name
      */
     public static String findMainMethod(String defaultFQN)
     {
@@ -47,19 +39,16 @@ public final class ASMResourceUtil
             for (Object o : cn.methods.toArray())
             {
                 MethodNode m = (MethodNode) o;
-    
+
                 if (m.name.equals("main") && m.desc.equals("([Ljava/lang/String;)V"))
-                {
                     return cn.name + "." + m.name;
-                }
             }
         }
-        
+
         return defaultFQN;
     }
 
-    public static void renameFieldNode(String originalParentName,
-                                       String originalFieldName, String originalFieldDesc,
+    public static void renameFieldNode(String originalParentName, String originalFieldName, String originalFieldDesc,
                                        String newFieldParent, String newFieldName, String newFieldDesc)
     {
         for (ClassNode c : BytecodeViewer.getLoadedClasses())
@@ -74,8 +63,8 @@ public final class ASMResourceUtil
                         FieldInsnNode field = (FieldInsnNode) i;
 
                         if (field.owner.equals(originalParentName)
-                                && field.name.equals(originalFieldName)
-                                && field.desc.equals(originalFieldDesc))
+                            && field.name.equals(originalFieldName)
+                            && field.desc.equals(originalFieldDesc))
                         {
                             if (newFieldParent != null)
                                 field.owner = newFieldParent;
@@ -90,8 +79,7 @@ public final class ASMResourceUtil
         }
     }
 
-    public static void renameMethodNode(String originalParentName,
-                                        String originalMethodName, String originalMethodDesc,
+    public static void renameMethodNode(String originalParentName, String originalMethodName, String originalMethodDesc,
                                         String newParent, String newName, String newDesc)
     {
         for (ClassNode c : BytecodeViewer.getLoadedClasses())
@@ -105,13 +93,15 @@ public final class ASMResourceUtil
                     {
                         MethodInsnNode mi = (MethodInsnNode) i;
                         if (mi.owner.equals(originalParentName)
-                                && mi.name.equals(originalMethodName)
-                                && mi.desc.equals(originalMethodDesc))
+                            && mi.name.equals(originalMethodName)
+                            && mi.desc.equals(originalMethodDesc))
                         {
                             if (newParent != null)
                                 mi.owner = newParent;
+
                             if (newName != null)
                                 mi.name = newName;
+
                             if (newDesc != null)
                                 mi.desc = newDesc;
                         }
@@ -123,19 +113,19 @@ public final class ASMResourceUtil
                 if (m.signature != null)
                 {
                     if (newName != null)
-                        m.signature = m.signature.replace(originalMethodName,
-                                newName);
+                        m.signature = m.signature.replace(originalMethodName, newName);
+
                     if (newParent != null)
-                        m.signature = m.signature.replace(originalParentName,
-                                newParent);
+                        m.signature = m.signature.replace(originalParentName, newParent);
                 }
 
                 if (m.name.equals(originalMethodName)
-                        && m.desc.equals(originalMethodDesc)
-                        && c.name.equals(originalParentName))
+                    && m.desc.equals(originalMethodDesc)
+                    && c.name.equals(originalParentName))
                 {
                     if (newName != null)
                         m.name = newName;
+
                     if (newDesc != null)
                         m.desc = newDesc;
                 }
@@ -143,8 +133,7 @@ public final class ASMResourceUtil
         }
     }
 
-    public static void renameClassNode(final String oldName,
-                                       final String newName)
+    public static void renameClassNode(String oldName, String newName)
     {
         for (ClassNode c : BytecodeViewer.getLoadedClasses())
         {
@@ -152,10 +141,10 @@ public final class ASMResourceUtil
             {
                 if (oo.innerName != null && oo.innerName.equals(oldName))
                     oo.innerName = newName;
-                
+
                 if (oo.name.equals(oldName))
                     oo.name = newName;
-                
+
                 if (oo.outerName != null && oo.outerName.equals(oldName))
                     oo.outerName = newName;
             }
@@ -165,13 +154,13 @@ public final class ASMResourceUtil
 
             if (c.superName.equals(oldName))
                 c.superName = newName;
-            
+
             for (Object o : c.fields.toArray())
             {
                 FieldNode f = (FieldNode) o;
                 f.desc = f.desc.replace(oldName, newName);
             }
-            
+
             for (Object o : c.methods.toArray())
             {
                 MethodNode m = (MethodNode) o;
@@ -195,7 +184,7 @@ public final class ASMResourceUtil
                         if (t.desc.equals(oldName))
                             t.desc = newName;
                     }
-                    
+
                     if (i instanceof MethodInsnNode)
                     {
                         MethodInsnNode mi = (MethodInsnNode) i;
@@ -203,6 +192,7 @@ public final class ASMResourceUtil
                             mi.owner = newName;
                         mi.desc = mi.desc.replace(oldName, newName);
                     }
+
                     if (i instanceof FieldInsnNode)
                     {
                         FieldInsnNode fi = (FieldInsnNode) i;

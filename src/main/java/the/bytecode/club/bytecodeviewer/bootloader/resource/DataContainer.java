@@ -1,12 +1,6 @@
-package the.bytecode.club.bytecodeviewer.bootloader.resource;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,23 +16,33 @@ import java.util.Map;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.bootloader.resource;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * @author Bibl (don't ban me pls)
- * @created ages ago
+ * @since 21 Jul 2013
  */
-public abstract class DataContainer<T> extends ArrayList<T> {
+public abstract class DataContainer<T> extends ArrayList<T>
+{
 
     private static final long serialVersionUID = -9022506488647444546L;
 
-    public DataContainer() {
+    public DataContainer()
+    {
         this(16);
     }
 
-    public DataContainer(int cap) {
+    public DataContainer(int cap)
+    {
         super(cap);
     }
 
-    public DataContainer(Collection<T> data) {
+    public DataContainer(Collection<T> data)
+    {
         addAll(data);
     }
 

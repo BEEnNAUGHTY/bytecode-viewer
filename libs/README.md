@@ -19,6 +19,6 @@ Some dependencies may have been modified or could be released by their author in
 
 #### Modifications
 
- - `JD-GUI`: Removed ASM and RSyntaxTextArea
- - `APKTool`: Recompiled with the newest dependency versions, removed prebuilt folder
- - `DarkLAF`: Merged core & windows libraries for 2.6.2-20210719.010320-83
+ - `ByteAnalysis`: Compiled from source with the newest dependency versions
+ - `APKTool`: Added the `apktool-cli` subproject, compiled without changes from source
+ - `JD-GUI`: Removed ASM, RSyntaxTextArea, ANTLR, and TreeLayout

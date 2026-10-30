@@ -1,27 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.resourcesearch;
-
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.Objects;
-import javax.swing.*;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
-import the.bytecode.club.bytecodeviewer.gui.contextmenu.ContextMenu;
-import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ResourceViewer;
-import the.bytecode.club.bytecodeviewer.searching.BackgroundSearchThread;
-import the.bytecode.club.bytecodeviewer.searching.LDCSearchTreeNodeResult;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedComponents;
-import the.bytecode.club.bytecodeviewer.translation.components.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -36,6 +15,26 @@ import the.bytecode.club.bytecodeviewer.translation.components.*;
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
+
+package the.bytecode.club.bytecodeviewer.gui.resourcesearch;
+
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
+import the.bytecode.club.bytecodeviewer.gui.contextmenu.ContextMenu;
+import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ResourceViewer;
+import the.bytecode.club.bytecodeviewer.searching.BackgroundSearchThread;
+import the.bytecode.club.bytecodeviewer.searching.LDCSearchTreeNodeResult;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedComponents;
+import the.bytecode.club.bytecodeviewer.translation.components.*;
+
+import javax.swing.*;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Objects;
 
 /**
  * A pane dedicating to searching the loaded files.
@@ -53,15 +52,14 @@ public class SearchBoxPane extends TranslatedVisibleComponent
     public final TranslatedDefaultMutableTreeNode treeRoot = new TranslatedDefaultMutableTreeNode("Results", TranslatedComponents.RESULTS);
     public final JTree tree;
     public final JComboBox<SearchType> typeBox;
-    
+
     public SearchType searchType = null;
-    public final JComboBox searchRadiusBox;
+    public final JComboBox<SearchRadius> searchRadiusBox;
     public final JPopupMenu rightClickMenu = new JPopupMenu();
 
     public JButton search = new TranslatedJButton("Search", TranslatedComponents.SEARCH);
     public BackgroundSearchThread performSearchThread;
 
-    @SuppressWarnings("unchecked")
     public SearchBoxPane()
     {
         super("Search", TranslatedComponents.SEARCH);
@@ -72,26 +70,27 @@ public class SearchBoxPane extends TranslatedVisibleComponent
 
         searchRadiusOpt.add(new TranslatedJLabel("Search from ", TranslatedComponents.SEARCH_FROM), BorderLayout.WEST);
 
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        
-        for (final SearchRadius st : SEARCH_RADII)
-            model.addElement(st);
+        DefaultComboBoxModel<SearchRadius> radiusModel = new DefaultComboBoxModel<>();
 
-        searchRadiusBox = new JComboBox(model);
+        for (SearchRadius st : SEARCH_RADII)
+            radiusModel.addElement(st);
+
+        searchRadiusBox = new JComboBox<>(radiusModel);
         searchRadiusOpt.add(searchRadiusBox, BorderLayout.CENTER);
         searchOpts.add(searchRadiusOpt);
 
-        model = new DefaultComboBoxModel();
-        for (final SearchType st : SEARCH_TYPES)
-            model.addElement(st);
+        DefaultComboBoxModel<SearchType> typeModel = new DefaultComboBoxModel<>();
+        for (SearchType st : SEARCH_TYPES)
+            typeModel.addElement(st);
 
-        typeBox = new JComboBox<SearchType>(model);
-        final JPanel searchOptPanel = new JPanel();
-
-        final ItemListener il = arg0 -> {
+        typeBox = new JComboBox<>(typeModel);
+        final JPanel searchOptPanel = new JPanel(new BorderLayout());
+        searchOptPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        final ItemListener il = arg0 ->
+        {
             searchOptPanel.removeAll();
             searchType = (SearchType) typeBox.getSelectedItem();
-            searchOptPanel.add(Objects.requireNonNull(searchType).panel.getPanel());
+            searchOptPanel.add(Objects.requireNonNull(searchType).panel.getPanel(), BorderLayout.CENTER);
 
             searchOptPanel.revalidate();
             searchOptPanel.repaint();
@@ -99,7 +98,7 @@ public class SearchBoxPane extends TranslatedVisibleComponent
 
         typeBox.addItemListener(il);
 
-        typeBox.setSelectedItem(SearchType.Strings);
+        typeBox.setSelectedItem(SearchType.STRINGS);
         il.itemStateChanged(null);
 
         searchOpts.add(typeBox);
@@ -124,7 +123,7 @@ public class SearchBoxPane extends TranslatedVisibleComponent
 
         getContentPane().add(optionPanel, BorderLayout.NORTH);
         getContentPane().add(new JScrollPane(tree), BorderLayout.CENTER);
-        
+
         tree.addMouseListener(new MouseAdapter()
         {
             @Override
@@ -134,31 +133,31 @@ public class SearchBoxPane extends TranslatedVisibleComponent
                 if (e.isMetaDown())
                 {
                     TreePath selPath = SearchBoxPane.this.tree.getClosestPathForLocation(e.getX(), e.getY());
-    
+
                     if (selPath == null)
                         return;
-                    
+
                     //select the closest path
                     SearchBoxPane.this.tree.clearSelection();
                     SearchBoxPane.this.tree.addSelectionPath(selPath);
-                    
-                    if(!(tree.getLastSelectedPathComponent() instanceof LDCSearchTreeNodeResult))
+
+                    if (!(tree.getLastSelectedPathComponent() instanceof LDCSearchTreeNodeResult))
                         return;
-                    
+
                     //get selected path
                     LDCSearchTreeNodeResult result = (LDCSearchTreeNodeResult) tree.getLastSelectedPathComponent();
-    
+
                     showContextMenu(result, e.getX(), e.getY());
                 }
                 else if (e.getButton() == MouseEvent.BUTTON1)
                 {
-                    if(!(tree.getLastSelectedPathComponent() instanceof  LDCSearchTreeNodeResult))
+                    if (!(tree.getLastSelectedPathComponent() instanceof LDCSearchTreeNodeResult))
                         return;
-                    
+
                     LDCSearchTreeNodeResult result = (LDCSearchTreeNodeResult) tree.getLastSelectedPathComponent();
-    
+
                     final String name = result.resourceWorkingName;
-    
+
                     BytecodeViewer.viewer.workPane.addClassResource(result.container, name);
                 }
             }
@@ -166,7 +165,7 @@ public class SearchBoxPane extends TranslatedVisibleComponent
 
         this.setVisible(true);
     }
-    
+
     public void resetWorkspace()
     {
         treeRoot.removeAllChildren();
@@ -178,14 +177,14 @@ public class SearchBoxPane extends TranslatedVisibleComponent
         treeRoot.removeAllChildren();
         searchType = (SearchType) typeBox.getSelectedItem();
         final SearchRadius radius = (SearchRadius) searchRadiusBox.getSelectedItem();
-        
-        if (radius == SearchRadius.All_Classes)
+
+        if (radius == SearchRadius.ALL_CLASSES)
         {
             if (performSearchThread == null || performSearchThread.finished)
             {
                 BytecodeViewer.viewer.searchBoxPane.search.setEnabled(false);
                 BytecodeViewer.viewer.searchBoxPane.search.setText("Searching, please wait..");
-                
+
                 performSearchThread = new PerformSearch(this);
                 performSearchThread.start();
             }
@@ -194,28 +193,28 @@ public class SearchBoxPane extends TranslatedVisibleComponent
                 BytecodeViewer.showMessage("You currently have a search performing in the background, please wait for that to finish.");
             }
         }
-        else if (radius == SearchRadius.Current_Class)
+        else if (radius == SearchRadius.CURRENT_CLASS)
         {
             final ResourceViewer cv = BytecodeViewer.getActiveResource();
-            
+
             if (cv != null)
                 searchType.panel.search(cv.resource.container, cv.resource.workingName, cv.resource.getResourceClassNode(), exact.isSelected());
         }
     }
-    
+
     private void showContextMenu(LDCSearchTreeNodeResult selectedNode, int x, int y)
     {
         if (selectedNode == null)
             return;
-        
+
         ContextMenu.buildMenu(null, null, selectedNode, rightClickMenu);
         rightClickMenu.show(this.tree, x, y);
     }
-    
+
     /**
      * Opens and decompiles the LDCSearchTreeNodeResult in a new tab
      */
-    public void quickDecompile(Decompiler decompiler, LDCSearchTreeNodeResult result,  boolean quickEdit)
+    public void quickDecompile(Decompiler decompiler, LDCSearchTreeNodeResult result, boolean quickEdit)
     {
         Decompiler tempDecompiler1 = BytecodeViewer.viewer.viewPane1.getSelectedDecompiler();
         boolean editable1 = BytecodeViewer.viewer.viewPane1.isPaneEditable();
@@ -223,16 +222,16 @@ public class SearchBoxPane extends TranslatedVisibleComponent
         boolean editable2 = BytecodeViewer.viewer.viewPane2.isPaneEditable();
         Decompiler tempDecompiler3 = BytecodeViewer.viewer.viewPane3.getSelectedDecompiler();
         boolean editable3 = BytecodeViewer.viewer.viewPane3.isPaneEditable();
-        
+
         BytecodeViewer.viewer.viewPane1.setSelectedDecompiler(decompiler);
         BytecodeViewer.viewer.viewPane1.setPaneEditable(quickEdit);
         BytecodeViewer.viewer.viewPane2.setSelectedDecompiler(Decompiler.NONE);
         BytecodeViewer.viewer.viewPane2.setPaneEditable(false);
         BytecodeViewer.viewer.viewPane3.setSelectedDecompiler(Decompiler.NONE);
         BytecodeViewer.viewer.viewPane3.setPaneEditable(false);
-    
+
         BytecodeViewer.viewer.workPane.addClassResource(result.container, result.resourceWorkingName);
-        
+
         BytecodeViewer.viewer.viewPane1.setSelectedDecompiler(tempDecompiler1);
         BytecodeViewer.viewer.viewPane1.setPaneEditable(editable1);
         BytecodeViewer.viewer.viewPane2.setSelectedDecompiler(tempDecompiler2);
@@ -240,6 +239,6 @@ public class SearchBoxPane extends TranslatedVisibleComponent
         BytecodeViewer.viewer.viewPane3.setSelectedDecompiler(tempDecompiler3);
         BytecodeViewer.viewer.viewPane3.setPaneEditable(editable3);
     }
-    
+
     private static final long serialVersionUID = -1098524689236993932L;
 }

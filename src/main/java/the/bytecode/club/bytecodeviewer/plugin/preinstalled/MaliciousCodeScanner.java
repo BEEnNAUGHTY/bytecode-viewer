@@ -1,19 +1,6 @@
-package the.bytecode.club.bytecodeviewer.plugin.preinstalled;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-
-import org.objectweb.asm.tree.ClassNode;
-import the.bytecode.club.bytecodeviewer.api.Plugin;
-import the.bytecode.club.bytecodeviewer.api.PluginConsole;
-import the.bytecode.club.bytecodeviewer.malwarescanner.MalwareScan;
-import the.bytecode.club.bytecodeviewer.malwarescanner.MalwareScanModule;
-import the.bytecode.club.bytecodeviewer.malwarescanner.util.MaliciousCodeOptions;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -29,9 +16,22 @@ import the.bytecode.club.bytecodeviewer.malwarescanner.util.MaliciousCodeOptions
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.plugin.preinstalled;
+
+import org.objectweb.asm.tree.ClassNode;
+import the.bytecode.club.bytecodeviewer.api.Plugin;
+import the.bytecode.club.bytecodeviewer.api.PluginConsole;
+import the.bytecode.club.bytecodeviewer.malwarescanner.MalwareScan;
+import the.bytecode.club.bytecodeviewer.malwarescanner.MalwareScanModule;
+import the.bytecode.club.bytecodeviewer.malwarescanner.util.MaliciousCodeOptions;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
- * The Malicious Code Scanner plugin. All of the core components have been moved to the malwarescanner package.
- *
+ * The Malicious Code Scanner plugin. All the core components have been moved to the malwarescanner package.
+ * <p>
  * This tool is used to help aid reverse engineers in identifying malicious code.
  *
  * @author Konloch
@@ -49,20 +49,20 @@ public class MaliciousCodeScanner extends Plugin
     }
 
     @Override
-    public void execute(ArrayList<ClassNode> classNodeList)
+    public void execute(List<ClassNode> classNodeList)
     {
         PluginConsole frame = new PluginConsole("Malicious Code Scanner");
         StringBuilder sb = new StringBuilder();
-        
-        HashSet<String> scanOptions = new HashSet<>();
-        
-        for(MaliciousCodeOptions option : options)
-            if(option.getCheckBox().isSelected())
+
+        Set<String> scanOptions = new HashSet<>();
+
+        for (MaliciousCodeOptions option : options)
+            if (option.getCheckBox().isSelected())
                 scanOptions.add(option.getModule().name());
-        
+
         //create a new code scan object with all of the scan options
         MalwareScan scan = new MalwareScan(classNodeList, sb, scanOptions);
-        
+
         //scan the modules one by one
         MalwareScanModule.performScan(scan);
 

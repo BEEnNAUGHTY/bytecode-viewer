@@ -1,14 +1,6 @@
-package the.bytecode.club.bytecodeviewer.util;
-
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import org.jetbrains.annotations.NotNull;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -24,48 +16,74 @@ import org.jetbrains.annotations.NotNull;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.util;
+
+import org.jetbrains.annotations.NotNull;
+import the.bytecode.club.bytecodeviewer.Constants;
+
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Convert the various newline conventions to the local platform's newline convention.
- *
+ * <p>
  * This stream can be used with the Message.writeTo method to
  * generate a message that uses the local platform's line terminator
  * for the purpose of (e.g.) saving the message to a local file.
  */
-public class NewlineOutputStream extends FilterOutputStream {
+public class NewlineOutputStream extends FilterOutputStream
+{
     private int lastByte = -1;
     private static byte[] newline;
 
-    public NewlineOutputStream(OutputStream os) {
+    public NewlineOutputStream(OutputStream os)
+    {
         super(os);
-        if (newline == null) {
-            String s = System.getProperty("line.separator");
+
+        if (newline == null)
+        {
+            String s = Constants.NL;
+
             if (s == null || s.length() <= 0)
                 s = "\n";
+
             newline = s.getBytes(StandardCharsets.ISO_8859_1);    // really us-ascii
         }
     }
 
     @Override
-    public void write(int b) throws IOException {
-        if (b == '\r') {
+    public void write(int b) throws IOException
+    {
+        if (b == '\r')
+        {
             out.write(newline);
-        } else if (b == '\n') {
+        }
+        else if (b == '\n')
+        {
             if (lastByte != '\r')
                 out.write(newline);
-        } else {
+        }
+        else
+        {
             out.write(b);
         }
+
         lastByte = b;
     }
 
     @Override
-    public void write(byte @NotNull [] b) throws IOException {
+    public void write(byte @NotNull [] b) throws IOException
+    {
         write(b, 0, b.length);
     }
 
     @Override
-    public void write(byte @NotNull [] b, int off, int len) throws IOException {
-        for (int i = 0; i < len; i++) {
+    public void write(byte @NotNull [] b, int off, int len) throws IOException
+    {
+        for (int i = 0; i < len; i++)
+        {
             write(b[off + i]);
         }
     }

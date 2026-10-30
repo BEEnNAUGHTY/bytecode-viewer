@@ -1,20 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.plugins;
-
-import java.awt.Dimension;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.resources.IconResources;
-import the.bytecode.club.bytecodeviewer.plugin.PluginManager;
-import the.bytecode.club.bytecodeviewer.plugin.preinstalled.ReplaceStrings;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -30,6 +16,16 @@ import the.bytecode.club.bytecodeviewer.plugin.preinstalled.ReplaceStrings;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.plugins;
+
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.plugin.PluginManager;
+import the.bytecode.club.bytecodeviewer.plugin.preinstalled.ReplaceStrings;
+import the.bytecode.club.bytecodeviewer.resources.IconResources;
+
+import javax.swing.*;
+import java.awt.*;
+
 /**
  * The UI for replace strings plugin.
  *
@@ -42,10 +38,10 @@ public class ReplaceStringsOptions extends JFrame
     {
         if (BytecodeViewer.promptIfNoLoadedClasses())
             return;
-        
+
         new ReplaceStringsOptions().setVisible(true);
     }
-    
+
     public ReplaceStringsOptions()
     {
         this.setIconImages(IconResources.iconList);
@@ -88,17 +84,15 @@ public class ReplaceStringsOptions extends JFrame
         classToReplaceIn.setColumns(10);
 
         final JCheckBox chckbxNewCheckBox = new JCheckBox("Replace All Contains");
-        chckbxNewCheckBox.setToolTipText("If it's unticked, it will check if the string equals, if its ticked it will check if"
-                        + " it contains, then replace the original LDC part of the string.");
+        chckbxNewCheckBox.setToolTipText("If it's unticked, it will check if the string equals, if its ticked it will check if" + " it contains, then replace the original LDC part of the string.");
         chckbxNewCheckBox.setBounds(6, 7, 232, 23);
         getContentPane().add(chckbxNewCheckBox);
-        btnNewButton.addActionListener(arg0 -> {
-            PluginManager.runPlugin(new ReplaceStrings(originalLDC.getText(),
-                    newLDC.getText(), classToReplaceIn.getText(),
-                    chckbxNewCheckBox.isSelected()));
+        btnNewButton.addActionListener(arg0 ->
+        {
+            PluginManager.runPlugin(new ReplaceStrings(originalLDC.getText(), newLDC.getText(), classToReplaceIn.getText(), chckbxNewCheckBox.isSelected()));
             dispose();
         });
-        
+
         this.setLocationRelativeTo(null);
     }
 

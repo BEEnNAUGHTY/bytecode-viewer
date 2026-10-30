@@ -1,14 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.resourcesearch;
-
-import the.bytecode.club.bytecodeviewer.searching.SearchPanel;
-import the.bytecode.club.bytecodeviewer.searching.impl.FieldCallSearch;
-import the.bytecode.club.bytecodeviewer.searching.impl.LDCSearch;
-import the.bytecode.club.bytecodeviewer.searching.impl.MethodCallSearch;
-import the.bytecode.club.bytecodeviewer.searching.impl.RegexSearch;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -24,22 +16,33 @@ import the.bytecode.club.bytecodeviewer.searching.impl.RegexSearch;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.resourcesearch;
+
+import the.bytecode.club.bytecodeviewer.searching.SearchPanel;
+import the.bytecode.club.bytecodeviewer.searching.impl.*;
+
 /**
  * @author Konloch
  * @since 6/25/2021
  */
 public enum SearchType
 {
-	Strings(new LDCSearch()),
-	Regex(new RegexSearch()),
-	MethodCall(new MethodCallSearch()),
-	FieldCall(new FieldCallSearch()),
-	;
-	
-	public final SearchPanel panel;
-	
-	SearchType(final SearchPanel panel)
-	{
-		this.panel = panel;
-	}
+    STRINGS(new LDCSearch()),
+    REGEX(new RegexSearch()),
+    METHOD_CALL(new MethodCallSearch()),
+    FIELD_CALL(new FieldCallSearch()),
+    MEMBER_WITH_ANNOTATION(new MemberWithAnnotationSearch());
+
+    public final SearchPanel panel;
+
+    SearchType(SearchPanel panel)
+    {
+        this.panel = panel;
+    }
+
+    @Override
+    public String toString()
+    {
+        return panel.toString();
+    }
 }

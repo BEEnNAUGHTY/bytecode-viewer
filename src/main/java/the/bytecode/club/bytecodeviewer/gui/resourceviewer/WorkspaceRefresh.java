@@ -1,16 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.resourceviewer;
-
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ClassViewer;
-import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.FileViewer;
-import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ResourceViewer;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -26,35 +16,44 @@ import java.awt.event.ActionEvent;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.resourceviewer;
+
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ResourceViewer;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+
 /**
  * @author Konloch
  * @since 6/24/2021
  */
 public class WorkspaceRefresh implements Runnable
 {
-	private final ActionEvent event;
-	
-	public WorkspaceRefresh(ActionEvent event) {
-		this.event = event;
-	}
-	
-	@Override
-	public void run()
-	{
-		if (!BytecodeViewer.autoCompileSuccessful())
-			return;
-		
-		JButton src = null;
-		if(event != null && event.getSource() instanceof JButton)
-			src = (JButton) event.getSource();
-		
-		final ResourceViewer tabComp = (ResourceViewer) BytecodeViewer.viewer.workPane.tabs.getSelectedComponent();
-		
-		if(tabComp == null)
-			return;
-		
-		BytecodeViewer.updateBusyStatus(true);
-		tabComp.refresh(src);
-		BytecodeViewer.updateBusyStatus(false);
-	}
+    private final ActionEvent event;
+
+    public WorkspaceRefresh(ActionEvent event)
+    {
+        this.event = event;
+    }
+
+    @Override
+    public void run()
+    {
+        if (!BytecodeViewer.autoCompileSuccessful())
+            return;
+
+        JButton src = null;
+        if (event != null && event.getSource() instanceof JButton)
+            src = (JButton) event.getSource();
+
+        final ResourceViewer tabComp = (ResourceViewer) BytecodeViewer.viewer.workPane.tabs.getSelectedComponent();
+
+        if (tabComp == null)
+            return;
+
+        BytecodeViewer.updateBusyStatus(true);
+        tabComp.refresh(src);
+        BytecodeViewer.updateBusyStatus(false);
+    }
 }

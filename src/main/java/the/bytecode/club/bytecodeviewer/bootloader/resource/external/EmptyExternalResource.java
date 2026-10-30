@@ -1,11 +1,6 @@
-package the.bytecode.club.bytecodeviewer.bootloader.resource.external;
-
-import java.io.IOException;
-import java.net.URL;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -21,16 +16,22 @@ import java.net.URL;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.bootloader.resource.external;
+
+import java.net.URL;
+
 /**
  * @author Bibl (don't ban me pls)
- * @created 21 Jul 2015 00:29:11
+ * @since 21 Jul 2015 00:29:11
  */
-public class EmptyExternalResource<T> extends ExternalResource<T> {
+public class EmptyExternalResource<T> extends ExternalResource<T>
+{
 
     /**
      * @param location
      */
-    public EmptyExternalResource(URL location) {
+    public EmptyExternalResource(URL location)
+    {
         super(location);
     }
 
@@ -38,7 +39,8 @@ public class EmptyExternalResource<T> extends ExternalResource<T> {
      * @see the.bytecode.club.bootloader.resource.ExternalResource#load()
      */
     @Override
-    public T load() throws IOException {
+    public T load()
+    {
         throw new UnsupportedOperationException();
     }
 }

@@ -1,8 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.contextmenu;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,27 +16,30 @@ package the.bytecode.club.bytecodeviewer.gui.contextmenu;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.contextmenu;
+
 /**
  * @author Konloch
  * @since 7/26/2021
  */
 public class ContextMenuItem
 {
-	private final ContextMenuType menuType;
-	private final BuildContextMenuItem buildContextMenuItem;
-	
-	public ContextMenuItem(ContextMenuType menuType, BuildContextMenuItem buildContextMenuItem) {
-		this.menuType = menuType;
-		this.buildContextMenuItem = buildContextMenuItem;
-	}
-	
-	public ContextMenuType getMenuType()
-	{
-		return menuType;
-	}
-	
-	public BuildContextMenuItem getBuildContextMenuItem()
-	{
-		return buildContextMenuItem;
-	}
+    private final ContextMenuType menuType;
+    private final BuildContextMenuItem buildContextMenuItem;
+
+    public ContextMenuItem(ContextMenuType menuType, BuildContextMenuItem buildContextMenuItem)
+    {
+        this.menuType = menuType;
+        this.buildContextMenuItem = buildContextMenuItem;
+    }
+
+    public ContextMenuType getMenuType()
+    {
+        return menuType;
+    }
+
+    public BuildContextMenuItem getBuildContextMenuItem()
+    {
+        return buildContextMenuItem;
+    }
 }

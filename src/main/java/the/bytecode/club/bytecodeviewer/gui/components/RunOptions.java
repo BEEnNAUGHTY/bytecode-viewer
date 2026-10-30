@@ -1,20 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.components;
-
-import java.awt.Dimension;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
-import the.bytecode.club.bytecodeviewer.resources.IconResources;
-import the.bytecode.club.bytecodeviewer.api.ASMResourceUtil;
-import the.bytecode.club.bytecodeviewer.plugin.PluginManager;
-import the.bytecode.club.bytecodeviewer.plugin.preinstalled.EZInjection;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -30,6 +16,16 @@ import the.bytecode.club.bytecodeviewer.plugin.preinstalled.EZInjection;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.components;
+
+import the.bytecode.club.bytecodeviewer.api.ASMResourceUtil;
+import the.bytecode.club.bytecodeviewer.plugin.PluginManager;
+import the.bytecode.club.bytecodeviewer.plugin.preinstalled.EZInjection;
+import the.bytecode.club.bytecodeviewer.resources.IconResources;
+
+import javax.swing.*;
+import java.awt.*;
+
 /**
  * The UI for File>Run aka EZ-Injection plugin.
  *
@@ -42,7 +38,7 @@ public class RunOptions extends JFrame
     private final JCheckBox debugMethodCalls;
     private final JTextField debugClasses;
     private final JTextField socksProxy;
-    
+
     public RunOptions()
     {
         this.setIconImages(IconResources.iconList);
@@ -80,7 +76,7 @@ public class RunOptions extends JFrame
         getContentPane().add(mainMethodFQN);
         mainMethodFQN.setColumns(10);
 
-        JLabel lblNewLabel = new JLabel("Debug Classes (Seperate with , ):");
+        JLabel lblNewLabel = new JLabel("Debug Classes (Separated with , ):");
         lblNewLabel.setBounds(10, 89, 228, 14);
         getContentPane().add(lblNewLabel);
 
@@ -115,16 +111,10 @@ public class RunOptions extends JFrame
         printToCommandLine.setBounds(6, 315, 232, 23);
         getContentPane().add(printToCommandLine);
         this.setLocationRelativeTo(null);
-        btnNewButton.addActionListener(arg0 -> {
-            PluginManager.runPlugin(new EZInjection(accessModifiers
-                    .isSelected(), injectHooks.isSelected(),
-                    debugMethodCalls.isSelected(), invokeMethod
-                    .isSelected(),
-                    mainMethodFQN.getText(), false, false, debugClasses
-                    .getText(), this.socksProxy.getText(), forceProxy
-                    .isSelected(),
-                    launchReflectionKit.isSelected(), console.isSelected(),
-                    printToCommandLine.isSelected()));
+
+        btnNewButton.addActionListener(arg0 ->
+        {
+            PluginManager.runPlugin(new EZInjection(accessModifiers.isSelected(), injectHooks.isSelected(), debugMethodCalls.isSelected(), invokeMethod.isSelected(), mainMethodFQN.getText(), false, false, debugClasses.getText(), this.socksProxy.getText(), forceProxy.isSelected(), launchReflectionKit.isSelected(), console.isSelected(), printToCommandLine.isSelected()));
             dispose();
         });
     }

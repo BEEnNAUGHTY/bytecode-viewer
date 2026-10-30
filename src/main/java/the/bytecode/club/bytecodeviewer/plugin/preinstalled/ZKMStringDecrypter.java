@@ -1,13 +1,6 @@
-package the.bytecode.club.bytecodeviewer.plugin.preinstalled;
-
-import java.util.ArrayList;
-import org.objectweb.asm.tree.ClassNode;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.api.Plugin;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,6 +16,14 @@ import the.bytecode.club.bytecodeviewer.api.Plugin;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.plugin.preinstalled;
+
+import org.objectweb.asm.tree.ClassNode;
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.api.Plugin;
+
+import java.util.List;
+
 /**
  * Coming soon
  *
@@ -32,7 +33,7 @@ import the.bytecode.club.bytecodeviewer.api.Plugin;
 public class ZKMStringDecrypter extends Plugin
 {
     @Override
-    public void execute(ArrayList<ClassNode> classNodeList)
+    public void execute(List<ClassNode> classNodeList)
     {
         BytecodeViewer.showMessage("This is a planned feature.");
     }

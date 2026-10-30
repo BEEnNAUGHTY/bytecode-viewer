@@ -1,16 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.contextmenu.resourcelist;
-
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
-import the.bytecode.club.bytecodeviewer.gui.contextmenu.ContextMenuItem;
-import the.bytecode.club.bytecodeviewer.gui.contextmenu.ContextMenuType;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
-
-import javax.swing.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -26,27 +16,36 @@ import javax.swing.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.contextmenu.resourcelist;
+
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.decompilers.Decompiler;
+import the.bytecode.club.bytecodeviewer.gui.contextmenu.ContextMenuItem;
+import the.bytecode.club.bytecodeviewer.gui.contextmenu.ContextMenuType;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
+
+import javax.swing.*;
+
 /**
  * @author Konloch
  * @since 7/27/2021
  */
 public class QuickEdit extends ContextMenuItem
 {
-	public QuickEdit()
-	{
-		super(ContextMenuType.RESOURCE, ((tree, selPath, result, menu) ->
-		{
-			JMenu quickOpen = new JMenu("Quick Edit");
-			quickOpen.add(createMenu(TranslatedStrings.KRAKATAU.toString(), ()->
-					BytecodeViewer.viewer.resourcePane.quickDecompile(Decompiler.KRAKATAU_DISASSEMBLER, selPath, true)));
-			menu.add(quickOpen);
-		}));
-	}
-	
-	private static JMenuItem createMenu(String name, Runnable onClick)
-	{
-		JMenuItem menu = new JMenuItem(name);
-		menu.addActionListener((e)->onClick.run());
-		return menu;
-	}
+    public QuickEdit()
+    {
+        super(ContextMenuType.RESOURCE, ((tree, selPath, result, menu) ->
+        {
+            JMenu quickOpen = new JMenu("Quick Edit");
+            quickOpen.add(createMenu(TranslatedStrings.KRAKATAU.toString(), () -> BytecodeViewer.viewer.resourcePane.quickDecompile(Decompiler.KRAKATAU_DISASSEMBLER, selPath, true)));
+            menu.add(quickOpen);
+        }));
+    }
+
+    private static JMenuItem createMenu(String name, Runnable onClick)
+    {
+        JMenuItem menu = new JMenuItem(name);
+        menu.addActionListener((e) -> onClick.run());
+        return menu;
+    }
 }

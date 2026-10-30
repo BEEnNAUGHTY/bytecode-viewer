@@ -1,8 +1,6 @@
-package the.bytecode.club.bytecodeviewer.decompilers.bytecode;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,42 +16,46 @@ package the.bytecode.club.bytecodeviewer.decompilers.bytecode;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.decompilers.bytecode;
+
 /**
  * @author Bibl
  */
 
-public class PrefixedStringBuilder {
+public class PrefixedStringBuilder
+{
 
     protected StringBuilder sb;
     protected String prefix;
 
-    public PrefixedStringBuilder() {
+    public PrefixedStringBuilder()
+    {
         sb = new StringBuilder();
     }
 
-    public PrefixedStringBuilder append(String s) {
+    public PrefixedStringBuilder append(String s)
+    {
         sb.append(s);
-        if (s.contains("\n") && (prefix != null) && (prefix.length() > 0))// insert
-            // the
-            // prefix
-            // at
-            // every
-            // new
-            // line,
-            // overridable
+
+        // insert the prefix at every new line, overridable
+        if (s.contains("\n") && (prefix != null) && (prefix.length() > 0))
             sb.append(prefix);
+
         return this;
     }
 
-    public PrefixedStringBuilder append(Object o) {
+    public PrefixedStringBuilder append(Object o)
+    {
         return append(o.toString());
     }
 
-    public void setPrefix(String prefix) {
+    public void setPrefix(String prefix)
+    {
         this.prefix = prefix;
     }
 
-    public void trimPrefix(int amount) {
+    public void trimPrefix(int amount)
+    {
         if (prefix == null)
             return;
         if (prefix.length() < amount)
@@ -61,18 +63,21 @@ public class PrefixedStringBuilder {
         prefix = prefix.substring(0, prefix.length() - amount);
     }
 
-    public void appendPrefix(String s) {
+    public void appendPrefix(String s)
+    {
         if (prefix == null)
             prefix = "";
         prefix += s;
     }
 
-    public String getPrefix() {
+    public String getPrefix()
+    {
         return prefix;
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return sb.toString();
     }
 }

@@ -1,23 +1,6 @@
-package the.bytecode.club.bytecodeviewer.bootloader.resource.external;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.JarURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Enumeration;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.tree.ClassNode;
-import the.bytecode.club.bytecodeviewer.bootloader.resource.jar.contents.JarContents;
-import the.bytecode.club.bytecodeviewer.bootloader.resource.jar.JarInfo;
-import the.bytecode.club.bytecodeviewer.bootloader.resource.jar.JarResource;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -33,37 +16,64 @@ import the.bytecode.club.bytecodeviewer.bootloader.resource.jar.JarResource;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.bootloader.resource.external;
+
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.ClassNode;
+import the.bytecode.club.bytecodeviewer.bootloader.resource.jar.JarInfo;
+import the.bytecode.club.bytecodeviewer.bootloader.resource.jar.JarResource;
+import the.bytecode.club.bytecodeviewer.bootloader.resource.jar.contents.JarContents;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
 /**
  * @author Bibl (don't ban me pls)
- * @created 19 Jul 2015 02:33:23
+ * @since 19 Jul 2015 02:33:23
  */
-public class ExternalLibrary extends ExternalResource<JarContents<ClassNode>> {
+public class ExternalLibrary extends ExternalResource<JarContents<ClassNode>>
+{
 
     /**
      * @param location
      */
-    public ExternalLibrary(URL location) {
+    public ExternalLibrary(URL location)
+    {
         super(location);
     }
 
     /**
      * @param jar
      */
-    public ExternalLibrary(JarInfo jar) {
+    public ExternalLibrary(JarInfo jar)
+    {
         super(createJarURL(jar));
     }
 
-    public static URL createJarURL(JarInfo jar) {
-        try {
+    public static URL createJarURL(JarInfo jar)
+    {
+        try
+        {
             return jar.formattedURL();
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e)
+        {
             e.printStackTrace();
             return null;
         }
     }
 
-    public static byte[] read(InputStream in) throws IOException {
-        try (ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream()) {
+    public static byte[] read(InputStream in) throws IOException
+    {
+        try (ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream())
+        {
             byte[] buffer = new byte[1024];
             int bytesRead;
             while ((bytesRead = in.read(buffer)) != -1)
@@ -72,7 +82,8 @@ public class ExternalLibrary extends ExternalResource<JarContents<ClassNode>> {
         }
     }
 
-    protected ClassNode create(byte[] b) {
+    protected ClassNode create(byte[] b)
+    {
         ClassReader cr = new ClassReader(b);
         ClassNode cn = new ClassNode();
         cr.accept(cn, 0);
@@ -83,21 +94,27 @@ public class ExternalLibrary extends ExternalResource<JarContents<ClassNode>> {
      * @see the.bytecode.club.bytecodeviewer.loadermodel.ExternalResource#load()
      */
     @Override
-    public JarContents<ClassNode> load() throws IOException {
+    public JarContents<ClassNode> load() throws IOException
+    {
         JarContents<ClassNode> contents = new JarContents<>();
 
         JarURLConnection con = (JarURLConnection) getLocation().openConnection();
         JarFile jar = con.getJarFile();
 
         Enumeration<JarEntry> entries = jar.entries();
-        while (entries.hasMoreElements()) {
+        while (entries.hasMoreElements())
+        {
             JarEntry entry = entries.nextElement();
-            try (InputStream is = jar.getInputStream(entry)) {
+            try (InputStream is = jar.getInputStream(entry))
+            {
                 byte[] bytes = read(is);
-                if (entry.getName().endsWith(".class")) {
+                if (entry.getName().endsWith(".class"))
+                {
                     ClassNode cn = create(bytes);
                     contents.getClassContents().add(cn);
-                } else {
+                }
+                else
+                {
                     JarResource resource = new JarResource(entry.getName(), bytes);
                     contents.getResourceContents().add(resource);
                 }

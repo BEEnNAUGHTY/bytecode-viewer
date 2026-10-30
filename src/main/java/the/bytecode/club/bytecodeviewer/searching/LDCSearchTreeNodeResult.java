@@ -1,15 +1,6 @@
-package the.bytecode.club.bytecodeviewer.searching;
-
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.MethodNode;
-import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -25,25 +16,32 @@ import javax.swing.tree.DefaultMutableTreeNode;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.searching;
+
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodNode;
+import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
+
+import javax.swing.tree.DefaultMutableTreeNode;
+
 /**
  * @author Konloch
  * @since 7/29/2021
  */
 public class LDCSearchTreeNodeResult extends DefaultMutableTreeNode
 {
-	public final ResourceContainer container;
-	public final String resourceWorkingName;
-	public final String ldc;
-	public final String ldcType;
-	
-	public LDCSearchTreeNodeResult(ResourceContainer container, String resourceWorkingName,
-	                               ClassNode cn, MethodNode method, FieldNode field,
-	                               String ldc, String ldcType)
-	{
-		super("'"+ldc+"' -> " + cn.name);
-		this.container = container;
-		this.resourceWorkingName = resourceWorkingName;
-		this.ldc = ldc;
-		this.ldcType = ldcType;
-	}
+    public final ResourceContainer container;
+    public final String resourceWorkingName;
+    public final String ldc;
+    public final String ldcType;
+
+    public LDCSearchTreeNodeResult(ResourceContainer container, String resourceWorkingName, ClassNode cn, MethodNode method, FieldNode field, String ldc, String ldcType)
+    {
+        super("'" + ldc + "' -> " + cn.name);
+        this.container = container;
+        this.resourceWorkingName = resourceWorkingName;
+        this.ldc = ldc;
+        this.ldcType = ldcType;
+    }
 }

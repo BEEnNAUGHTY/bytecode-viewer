@@ -1,26 +1,6 @@
-package the.bytecode.club.bytecodeviewer.decompilers.impl;
-
-import me.konloch.kontainer.io.DiskWriter;
-import org.objectweb.asm.tree.ClassNode;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.Configuration;
-import the.bytecode.club.bytecodeviewer.Constants;
-import the.bytecode.club.bytecodeviewer.decompilers.InternalDecompiler;
-import the.bytecode.club.bytecodeviewer.gui.components.JFrameConsolePrintStream;
-import the.bytecode.club.bytecodeviewer.resources.ExternalResources;
-import the.bytecode.club.bytecodeviewer.util.MiscUtils;
-
-import java.io.File;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
-
-import static the.bytecode.club.bytecodeviewer.Constants.fs;
-import static the.bytecode.club.bytecodeviewer.api.ExceptionUI.SEND_STACKTRACE_TO;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -36,6 +16,31 @@ import static the.bytecode.club.bytecodeviewer.api.ExceptionUI.SEND_STACKTRACE_T
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.decompilers.impl;
+
+import com.konloch.disklib.DiskWriter;
+import org.objectweb.asm.tree.ClassNode;
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.Configuration;
+import the.bytecode.club.bytecodeviewer.Constants;
+import the.bytecode.club.bytecodeviewer.api.ExceptionUI;
+import the.bytecode.club.bytecodeviewer.decompilers.AbstractDecompiler;
+import the.bytecode.club.bytecodeviewer.gui.components.JFrameConsolePrintStream;
+import the.bytecode.club.bytecodeviewer.resources.ExternalResources;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
+import the.bytecode.club.bytecodeviewer.util.ExceptionUtils;
+import the.bytecode.club.bytecodeviewer.util.TempFile;
+
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+
+import static the.bytecode.club.bytecodeviewer.Constants.NL;
+import static the.bytecode.club.bytecodeviewer.translation.TranslatedStrings.DEV_MODE_SIMULATED_ERROR;
+import static the.bytecode.club.bytecodeviewer.translation.TranslatedStrings.ERROR;
+
 /**
  * Javap disassembler
  *
@@ -45,72 +50,100 @@ import static the.bytecode.club.bytecodeviewer.api.ExceptionUI.SEND_STACKTRACE_T
  * @since 07/11/2021
  */
 
-public class JavapDisassembler extends InternalDecompiler
+public class JavapDisassembler extends AbstractDecompiler
 {
-    @Override
-    public String decompileClassNode(ClassNode cn, byte[] b)
+    public JavapDisassembler()
     {
-        if(!ExternalResources.getSingleton().hasJavaToolsSet())
-            return "Set Java Tools Path!";
-        
-        return synchronizedDecompilation(cn, b);
+        super("Javap Disassembler", "javap");
     }
-    
-    private synchronized String synchronizedDecompilation(ClassNode cn, byte[] b)
+
+    @Override
+    public String decompileClassNode(ClassNode cn, byte[] bytes)
     {
-        final File tempDirectory = new File(Constants.tempDirectory + fs + MiscUtils.randomString(32) + fs);
-        tempDirectory.mkdir();
-        final File tempClass = new File(Constants.tempDirectory + fs + "temp" + MiscUtils.randomString(32) + ".class");
-    
-        DiskWriter.replaceFileBytes(tempClass.getAbsolutePath(), b, false);
-    
-        JFrameConsolePrintStream sysOutBuffer = null;
+        if (!ExternalResources.getSingleton().hasJavaToolsSet())
+            return "Set Java Tools Path!";
+
+        return disassembleJavaP(cn, bytes);
+    }
+
+    private synchronized String disassembleJavaP(ClassNode cn, byte[] bytes)
+    {
+        TempFile tempFile = null;
+        String exception;
+
+        JFrameConsolePrintStream sysOutBuffer;
+
         try
         {
+            //create the temporary files
+            tempFile = TempFile.createTemporaryFile(true, ".class");
+            File tempClassFile = tempFile.getFile();
+
+            //write the bytes to the class-file
+            DiskWriter.write(tempClassFile.getAbsolutePath(), bytes);
+
             //load java tools into a temporary classloader
-            URLClassLoader child = new URLClassLoader(
-                    new URL[] {new File(Configuration.javaTools).toURI().toURL()},
-                    this.getClass().getClassLoader()
-            );
-        
+            URLClassLoader child = new URLClassLoader(new URL[]{new File(Configuration.javaTools).toURI().toURL()}, this.getClass().getClassLoader());
+
             //setup reflection
             Class<?> javap = child.loadClass("com.sun.tools.javap.Main");
             Method main = javap.getMethod("main", String[].class);
-            Object cl = javap.newInstance();
-        
+
             //pipe sys out
             sysOutBuffer = new JFrameConsolePrintStream("", false);
-        
+
             //silence security manager debugging
             BytecodeViewer.sm.silenceExec(true);
-        
+
             //invoke Javap
-            main.invoke(cl, (Object) new String[]{
-                    "-p", //Shows all classes and members
+            try
+            {
+                main.invoke(null, (Object) new String[]{"-p", //Shows all classes and members
                     "-c", //Prints out disassembled code
                     //"-l", //Prints out line and local variable tables
                     "-constants", //Shows static final constants
-                    tempClass.getAbsolutePath()});
+                    tempClassFile.getAbsolutePath()});
+            }
+            catch (InvocationTargetException e)
+            {
+                //expected warning behaviour on JDK-15
+            }
+
+            //signal finished
+            sysOutBuffer.finished();
+
+            //handle simulated errors
+            if(Constants.DEV_FLAG_DECOMPILERS_SIMULATED_ERRORS)
+                throw new RuntimeException(DEV_MODE_SIMULATED_ERROR.toString());
+
+            //return output
+            return sysOutBuffer.getTextAreaOutputStreamOut().getBuffer().toString();
         }
-        catch (Exception e)
+        catch (IllegalAccessException e)
         {
-            e.printStackTrace();
+            //TODO fallback using CLI (External Process API)
+
+            return TranslatedStrings.ILLEGAL_ACCESS_ERROR.toString();
+        }
+        catch (Throwable e)
+        {
+            exception = ExceptionUtils.exceptionToString(e);
         }
         finally
         {
             BytecodeViewer.sm.silenceExec(false);
-            tempClass.delete();
+
+            if(tempFile != null)
+                tempFile.cleanup();
         }
-    
-        if(sysOutBuffer != null)
-        {
-            sysOutBuffer.finished();
-            return sysOutBuffer.getTextAreaOutputStreamOut().getBuffer().toString();
-        }
-    
-        return SEND_STACKTRACE_TO;
+
+        return getDecompilerName() + " " + ERROR + "! " + ExceptionUI.SEND_STACKTRACE_TO + NL + NL
+            + TranslatedStrings.SUGGESTED_FIX_DECOMPILER_ERROR + NL + NL + exception;
     }
 
     @Override
-    public void decompileToZip(String sourceJar, String zipName) { }
+    public void decompileToZip(String sourceJar, String zipName)
+    {
+        decompileToZipFallBack(sourceJar, zipName);
+    }
 }

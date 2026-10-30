@@ -1,8 +1,6 @@
-package the.bytecode.club.bytecodeviewer.util;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,65 +16,67 @@ package the.bytecode.club.bytecodeviewer.util;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.util;
+
 /**
  * @author Hupan
  * @since 11/20/2019
  */
 class SeqAndCount
 {
-	Integer seq;
-	Integer count;
-	
-	public static SeqAndCount init()
-	{
-		SeqAndCount seqAndCount = new SeqAndCount();
-		seqAndCount.setSeq(1);
-		seqAndCount.setCount(1);
-		return seqAndCount;
-	}
-	
-	public SeqAndCount incrSeq()
-	{
-		seq = seq + 1;
-		return this;
-	}
-	
-	public SeqAndCount incrCount()
-	{
-		count = count + 1;
-		return this;
-	}
-	
-	public SeqAndCount decrCount()
-	{
-		count = count - 1;
-		return this;
-	}
-	
-	public SeqAndCount incrSeqAndCount()
-	{
-		seq = seq + 1;
-		count = count + 1;
-		return this;
-	}
-	
-	public Integer getSeq()
-	{
-		return seq;
-	}
-	
-	public void setSeq(Integer seq)
-	{
-		this.seq = seq;
-	}
-	
-	public Integer getCount()
-	{
-		return count;
-	}
-	
-	public void setCount(Integer count)
-	{
-		this.count = count;
-	}
+    Integer seq;
+    Integer count;
+
+    public static SeqAndCount init()
+    {
+        SeqAndCount seqAndCount = new SeqAndCount();
+        seqAndCount.setSeq(1);
+        seqAndCount.setCount(1);
+        return seqAndCount;
+    }
+
+    public SeqAndCount incrSeq()
+    {
+        seq++;
+        return this;
+    }
+
+    public SeqAndCount incrCount()
+    {
+        count++;
+        return this;
+    }
+
+    public SeqAndCount decrCount()
+    {
+        count--;
+        return this;
+    }
+
+    public SeqAndCount incrSeqAndCount()
+    {
+        seq++;
+        count++;
+        return this;
+    }
+
+    public Integer getSeq()
+    {
+        return seq;
+    }
+
+    public void setSeq(Integer seq)
+    {
+        this.seq = seq;
+    }
+
+    public Integer getCount()
+    {
+        return count;
+    }
+
+    public void setCount(Integer count)
+    {
+        this.count = count;
+    }
 }

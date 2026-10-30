@@ -1,10 +1,6 @@
-package the.bytecode.club.bytecodeviewer.decompilers;
-
-import the.bytecode.club.bytecodeviewer.decompilers.impl.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,45 +16,65 @@ import the.bytecode.club.bytecodeviewer.decompilers.impl.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.decompilers;
+
+import the.bytecode.club.bytecodeviewer.decompilers.impl.*;
+
 /**
- * All of the decompilers/disassemblers BCV uses
+ * All the decompilers/disassemblers BCV uses
  *
  * @author Konloch
  */
 public enum Decompiler
 {
-    //TODO WARNING: do not change the decompiler order, when adding a new decompiler just add it to the end
-    // enum ordinal is used for settings serialization instead of the enum name
-    NONE("None", null),
-    PROCYON_DECOMPILER("Procyon Decompiler", new ProcyonDecompiler()),
-    CFR_DECOMPILER("CFR Decompiler", new CFRDecompiler()),
-    FERNFLOWER_DECOMPILER("FernFlower Decompiler", new FernFlowerDecompiler()),
-    BYTECODE_DISASSEMBLER("Bytecode Disassembler", new BytecodeDisassembler()),
-    HEXCODE_VIEWER("Hexcode Viewer", null),
-    SMALI_DISASSEMBLER("Smali Disassembler", new SmaliDisassembler()),
-    KRAKATAU_DECOMPILER("Krakatau Decompiler", new KrakatauDecompiler()),
-    KRAKATAU_DISASSEMBLER("Krakatau Disassembler", new KrakatauDisassembler()),
-    JD_DECOMPILER("JD-GUI Decompiler", new JDGUIDecompiler()),
-    JADX_DECOMPILER("JADX Decompiler", new JADXDecompiler()),
-    ASM_TEXTIFY_DISASSEMBLER("ASM Disassembler", new ASMTextifierDisassembler()),
-    JAVAP_DISASSEMBLER("Javap Disassembler", new JavapDisassembler()),
-    ;
-    
-    private final String decompilerName;
-    private final InternalDecompiler decompiler;
-    
-    Decompiler(String decompilerName, InternalDecompiler decompiler)
+    //TODO WARNING: do not change the decompiler order, when adding a new decompiler just add it to the end.
+    // Enum ordinal is used for settings serialization instead of the enum name.
+
+    NONE(null),
+    PROCYON_DECOMPILER(new ProcyonDecompiler()),                //java decompiler
+    CFR_DECOMPILER(new CFRDecompiler()),                        //java decompiler
+    FERNFLOWER_DECOMPILER(new FernFlowerDecompiler()),          //java decompiler
+
+    BYTECODE_DISASSEMBLER(new BytecodeDisassembler()),          //bytecode disassembler
+    HEXCODE_VIEWER(null),                                       //hexcode viewer
+
+    SMALI_DISASSEMBLER(new SmaliDisassembler()),                //bytecode disassembler
+    KRAKATAU_DECOMPILER(new KrakatauDecompiler()),              //java decompiler
+    KRAKATAU_DISASSEMBLER(new KrakatauDisassembler()),          //bytecode disassembler
+    JD_DECOMPILER(new JDGUIDecompiler()),                       //java decompiler
+    JADX_DECOMPILER(new JADXDecompiler()),                      //java decompiler
+
+    ASM_DISASSEMBLER(new ASMDisassembler()),                    //bytecode disassembler
+    ASMIFIER_CODE_GEN(new ASMifierGenerator()),                 //bytecode disassembler / code gen
+    JAVAP_DISASSEMBLER(new JavapDisassembler());                //bytecode disassembler
+
+    private final AbstractDecompiler decompiler;
+
+    Decompiler(AbstractDecompiler decompiler)
     {
-        this.decompilerName = decompilerName;
         this.decompiler = decompiler;
     }
-    
+
     public String getDecompilerName()
     {
-        return decompilerName;
+        if(decompiler == null)
+            return "None";
+
+        return getDecompiler().getDecompilerName();
     }
-    
-    public InternalDecompiler getDecompiler()
+
+    /**
+     * Used for the compressed exports (Zip / Jar)
+     */
+    public String getDecompilerNameProgrammatic()
+    {
+        if(decompiler == null)
+            return "";
+
+        return getDecompiler().getDecompilerNameProgrammatic();
+    }
+
+    public AbstractDecompiler getDecompiler()
     {
         return decompiler;
     }

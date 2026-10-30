@@ -1,12 +1,6 @@
-package the.bytecode.club.bytecodeviewer.searching;
-
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,6 +16,13 @@ import the.bytecode.club.bytecodeviewer.BytecodeViewer;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.searching;
+
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
 /**
  * searchBoxPane search triggering via enter key
  *
@@ -35,14 +36,19 @@ public class EnterKeyEvent implements KeyListener
     public static final EnterKeyEvent SINGLETON = new EnterKeyEvent();
 
     @Override
-    public void keyTyped(KeyEvent e) { }
+    public void keyTyped(KeyEvent e)
+    {
+    }
 
     @Override
-    public void keyPressed(KeyEvent e) {
+    public void keyPressed(KeyEvent e)
+    {
         if (e.getKeyCode() == KeyEvent.VK_ENTER)
             BytecodeViewer.viewer.searchBoxPane.search();
     }
 
     @Override
-    public void keyReleased(KeyEvent e) { }
+    public void keyReleased(KeyEvent e)
+    {
+    }
 }

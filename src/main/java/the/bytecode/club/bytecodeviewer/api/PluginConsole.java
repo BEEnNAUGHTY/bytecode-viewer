@@ -1,13 +1,6 @@
-package the.bytecode.club.bytecodeviewer.api;
-
-import the.bytecode.club.bytecodeviewer.Configuration;
-import the.bytecode.club.bytecodeviewer.gui.components.SystemConsole;
-import the.bytecode.club.bytecodeviewer.plugin.PluginManager;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,6 +16,13 @@ import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.api;
+
+import the.bytecode.club.bytecodeviewer.Configuration;
+import the.bytecode.club.bytecodeviewer.gui.components.SystemConsole;
+import the.bytecode.club.bytecodeviewer.plugin.PluginManager;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
+
 /**
  * A simple console GUI.
  *
@@ -34,27 +34,27 @@ public class PluginConsole extends SystemConsole
     //window showing is disabled to allow this frame to be added as a tab
     private boolean showWindow;
     private boolean added;
-    
+
     public PluginConsole(String pluginName)
     {
         super(Configuration.pluginConsoleAsNewTab ? (pluginName + " Output") : (TranslatedStrings.PLUGIN_CONSOLE_TITLE + " - " + pluginName));
     }
-    
+
     @Override
     public void setVisible(boolean visible)
     {
-        if(!added && visible)
+        if (!added && visible)
         {
             added = true;
             PluginManager.addConsole(this);
         }
-        
+
         //do nothing
-        if(!showWindow)
+        if (!showWindow)
             return;
-        
+
         super.setVisible(visible);
     }
-    
+
     private static final long serialVersionUID = -6556940545421437508L;
 }

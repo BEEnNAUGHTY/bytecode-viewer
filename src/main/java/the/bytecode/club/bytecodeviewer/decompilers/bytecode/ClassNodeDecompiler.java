@@ -1,20 +1,6 @@
-package the.bytecode.club.bytecodeviewer.decompilers.bytecode;
-
-import java.util.ArrayList;
-import java.util.List;
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InnerClassNode;
-import org.objectweb.asm.tree.MethodNode;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-
-import static the.bytecode.club.bytecodeviewer.Constants.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -30,6 +16,21 @@ import static the.bytecode.club.bytecodeviewer.Constants.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.decompilers.bytecode;
+
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InnerClassNode;
+import org.objectweb.asm.tree.MethodNode;
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static the.bytecode.club.bytecodeviewer.Constants.NL;
+
 /**
  * @author Konloch
  * @author Bibl
@@ -37,96 +38,122 @@ import static the.bytecode.club.bytecodeviewer.Constants.*;
 
 public class ClassNodeDecompiler
 {
-    public static PrefixedStringBuilder decompile(
-            PrefixedStringBuilder sb, ArrayList<String> decompiledClasses,
-            ClassNode cn) {
-        ArrayList<String> unableToDecompile = new ArrayList<>();
+    public static PrefixedStringBuilder decompile(PrefixedStringBuilder sb, List<String> decompiledClasses, ClassNode cn)
+    {
+        List<String> unableToDecompile = new ArrayList<>();
         decompiledClasses.add(cn.name);
         sb.append(getAccessString(cn.access));
         sb.append(" ");
         sb.append(cn.name);
-        if (cn.superName != null && !cn.superName.equals("java/lang/Object")) {
+
+        if (cn.superName != null && !cn.superName.equals("java/lang/Object"))
+        {
             sb.append(" extends ");
             sb.append(cn.superName);
         }
 
         int amountOfInterfaces = cn.interfaces.size();
-        if (amountOfInterfaces > 0) {
+
+        if (amountOfInterfaces > 0)
+        {
             sb.append(" implements ");
             sb.append(cn.interfaces.get(0));
-            for (int i = 1; i < amountOfInterfaces; i++) {
+
+            for (int i = 1; i < amountOfInterfaces; i++)
+            {
                 sb.append(", ");
                 sb.append(cn.interfaces.get(i));
             }
         }
+
         sb.append(" {");
-        sb.append(nl);
+        sb.append(NL);
         sb.append("     ");
         sb.append("<ClassVersion=" + cn.version + ">");
-        sb.append(nl);
+        sb.append(NL);
 
-        if (cn.sourceDebug != null) {
+        if (cn.sourceDebug != null)
+        {
             sb.append("     ");
             sb.append("<SourceDebug=" + cn.sourceDebug + ">");
-            sb.append(nl);
+            sb.append(NL);
         }
 
-        if (cn.sourceFile != null) {
+        if (cn.sourceFile != null)
+        {
             sb.append("     ");
             sb.append("<SourceFile=" + cn.sourceFile + ">");
-            sb.append(nl);
+            sb.append(NL);
         }
 
-        if (cn.signature != null) {
+        if (cn.signature != null)
+        {
             sb.append("     ");
             sb.append("<Sig=" + cn.signature + ">");
         }
 
-        for (FieldNode fn : cn.fields) {
-            sb.append(nl);
+        for (FieldNode fn : cn.fields)
+        {
+            sb.append(NL);
             sb.append("     ");
             FieldNodeDecompiler.decompile(sb, fn);
         }
-        if (cn.fields.size() > 0) {
-            sb.append(nl);
+
+        if (cn.fields.size() > 0)
+        {
+            sb.append(NL);
         }
-        for (MethodNode mn : cn.methods) {
-            sb.append(nl);
+
+        for (MethodNode mn : cn.methods)
+        {
+            sb.append(NL);
             MethodNodeDecompiler.decompile(sb, mn, cn);
         }
 
-        for (InnerClassNode o : cn.innerClasses) {
+        for (InnerClassNode o : cn.innerClasses)
+        {
             String innerClassName = o.name;
-            if ((innerClassName != null)
-                    && !decompiledClasses.contains(innerClassName)) {
+            if ((innerClassName != null) && !decompiledClasses.contains(innerClassName))
+            {
                 decompiledClasses.add(innerClassName);
                 ClassNode cn1 = BytecodeViewer.blindlySearchForClassNode(innerClassName);
-                if (cn1 != null) {
+
+                if (cn1 != null)
+                {
                     sb.appendPrefix("     ");
-                    sb.append(nl + nl);
+                    sb.append(NL + NL);
                     sb = decompile(sb, decompiledClasses, cn1);
                     sb.trimPrefix(5);
-                    sb.append(nl);
-                } else {
+                    sb.append(NL);
+                }
+                else
+                {
                     unableToDecompile.add(innerClassName);
                 }
             }
         }
 
-        if (!unableToDecompile.isEmpty()) {
+        if (!unableToDecompile.isEmpty())
+        {
             sb.append("// The following inner classes couldn't be decompiled: ");
-            for (String s : unableToDecompile) {
+
+            for (String s : unableToDecompile)
+            {
                 sb.append(s);
                 sb.append(" ");
             }
-            sb.append(nl);
+
+            sb.append(NL);
         }
 
-        if (cn.attrs != null) {
-            sb.append(nl);
-            for (Attribute attr : cn.attrs) {
+        if (cn.attrs != null)
+        {
+            sb.append(NL);
+
+            for (Attribute attr : cn.attrs)
+            {
                 //TODO: finish attributes
-                sb.append(attr.type + ": ");// + attr.content.toString());
+                sb.append(attr.type + ": "); // + attr.content.toString());
             }
         }
 
@@ -137,8 +164,10 @@ public class ClassNodeDecompiler
         return sb;
     }
 
-    public static String getAccessString(int access) {
+    public static String getAccessString(int access)
+    {
         List<String> tokens = new ArrayList<>();
+
         if ((access & Opcodes.ACC_PUBLIC) != 0)
             tokens.add("public");
         if ((access & Opcodes.ACC_PRIVATE) != 0)
@@ -159,18 +188,18 @@ public class ClassNodeDecompiler
             tokens.add("enum");
         if ((access & Opcodes.ACC_ANNOTATION) != 0)
             tokens.add("annotation");
-        if (!tokens.contains("interface") && !tokens.contains("enum")
-                && !tokens.contains("annotation"))
+        if (!tokens.contains("interface") && !tokens.contains("enum") && !tokens.contains("annotation"))
             tokens.add("class");
-        if (tokens.size() == 0)
-            return "[Error parsing]";
 
         // hackery delimeters
         StringBuilder sb = new StringBuilder(tokens.get(0));
-        for (int i = 1; i < tokens.size(); i++) {
+
+        for (int i = 1; i < tokens.size(); i++)
+        {
             sb.append(" ");
             sb.append(tokens.get(i));
         }
+
         return sb.toString();
     }
 }

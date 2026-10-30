@@ -1,23 +1,6 @@
-package the.bytecode.club.bytecodeviewer.plugin;
-
-import java.io.File;
-import java.util.*;
-import java.util.List;
-import javax.swing.filechooser.FileFilter;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.Configuration;
-import the.bytecode.club.bytecodeviewer.api.ExceptionUI;
-import the.bytecode.club.bytecodeviewer.api.Plugin;
-import the.bytecode.club.bytecodeviewer.api.PluginConsole;
-import the.bytecode.club.bytecodeviewer.gui.components.JFrameConsoleTabbed;
-import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ComponentViewer;
-import the.bytecode.club.bytecodeviewer.plugin.strategies.*;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
-import the.bytecode.club.bytecodeviewer.util.MiscUtils;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -33,9 +16,26 @@ import the.bytecode.club.bytecodeviewer.util.MiscUtils;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.plugin;
+
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.Configuration;
+import the.bytecode.club.bytecodeviewer.api.ExceptionUI;
+import the.bytecode.club.bytecodeviewer.api.Plugin;
+import the.bytecode.club.bytecodeviewer.api.PluginConsole;
+import the.bytecode.club.bytecodeviewer.gui.components.JFrameConsoleTabbed;
+import the.bytecode.club.bytecodeviewer.gui.resourceviewer.viewer.ComponentViewer;
+import the.bytecode.club.bytecodeviewer.plugin.strategies.*;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
+import the.bytecode.club.bytecodeviewer.util.MiscUtils;
+
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
+import java.util.*;
+
 /**
  * Supports loading of groovy, python or ruby scripts.
- *
+ * <p>
  * Only allows one plugin to be running at once.
  *
  * @author Konloch
@@ -45,39 +45,39 @@ import the.bytecode.club.bytecodeviewer.util.MiscUtils;
 
 public final class PluginManager
 {
-    private static final Map<String, PluginLaunchStrategy> launchStrategies = new HashMap<>();
-    private static final PluginFileFilter filter = new PluginFileFilter();
-    private static List<Plugin> pluginInstances = new ArrayList<>();
-    
+    private static final Map<String, PluginLaunchStrategy> LAUNCH_STRATEGIES = new HashMap<>();
+    private static final PluginFileFilter FILTER = new PluginFileFilter();
+    private static final List<Plugin> PLUGIN_INSTANCES = new ArrayList<>();
+
     //TODO this system needs to be redone, currently it will conflict if more than one plugin is ran at the same time
     // the solution is to tie the plugin object into the plugin console,
     // then move all of this into the plugin class as non-static objects
-    
+
     private static Plugin activePlugin;
     private static JFrameConsoleTabbed activeTabbedConsole;
     private static JFrameConsoleTabbed activeTabbedException;
-    private static HashMap<String, ExceptionUI> exceptionTabs = new HashMap<>();
+    private static final Map<String, ExceptionUI> exceptionTabs = new HashMap<>();
     private static int consoleCount = 0;
     private static int exceptionCount = 0;
     private static int errorCounter = 1;
 
     static
     {
-        launchStrategies.put("jar", new CompiledJavaPluginLaunchStrategy());
-        launchStrategies.put("java", new JavaPluginLaunchStrategy());
-        launchStrategies.put("js", new JavascriptPluginLaunchStrategy());
+        LAUNCH_STRATEGIES.put("jar", new CompiledJavaPluginLaunchStrategy());
+        LAUNCH_STRATEGIES.put("java", new JavaPluginLaunchStrategy());
+        LAUNCH_STRATEGIES.put("js", new JavascriptPluginLaunchStrategy());
 
         GroovyPluginLaunchStrategy groovy = new GroovyPluginLaunchStrategy();
-        launchStrategies.put("gy", groovy);
-        launchStrategies.put("groovy", groovy);
+        LAUNCH_STRATEGIES.put("gy", groovy);
+        LAUNCH_STRATEGIES.put("groovy", groovy);
 
         PythonPluginLaunchStrategy python = new PythonPluginLaunchStrategy();
-        launchStrategies.put("py", python);
-        launchStrategies.put("python", python);
+        LAUNCH_STRATEGIES.put("py", python);
+        LAUNCH_STRATEGIES.put("python", python);
 
         RubyPluginLaunchStrategy ruby = new RubyPluginLaunchStrategy();
-        launchStrategies.put("rb", ruby);
-        launchStrategies.put("ruby", ruby);
+        LAUNCH_STRATEGIES.put("rb", ruby);
+        LAUNCH_STRATEGIES.put("ruby", ruby);
     }
 
     /**
@@ -92,25 +92,25 @@ public final class PluginManager
             BytecodeViewer.showMessage(TranslatedStrings.ONE_PLUGIN_AT_A_TIME.toString());
             return;
         }
-        
+
         //reset the console count
         consoleCount = 0;
         exceptionCount = 0;
-        
+
         //reset the active tabbed console
         activeTabbedConsole = null;
         activeTabbedException = null;
         exceptionTabs.clear();
-    
+
         //reset the active plugin
         activePlugin = newPluginInstance;
-        
+
         //clean the plugin list from dead threads
-        pluginInstances.removeIf(Plugin::isFinished);
-        
+        PLUGIN_INSTANCES.removeIf(Plugin::isFinished);
+
         //add to the list of running instances
-        pluginInstances.add(newPluginInstance);
-        
+        PLUGIN_INSTANCES.add(newPluginInstance);
+
         //start the plugin thread
         newPluginInstance.start();
     }
@@ -124,47 +124,49 @@ public final class PluginManager
     public static void runPlugin(File f) throws Throwable
     {
         String ext = f.getName().substring(f.getName().lastIndexOf('.') + 1);
-        PluginLaunchStrategy strategy = launchStrategies.get(ext);
+        PluginLaunchStrategy strategy = LAUNCH_STRATEGIES.get(ext);
 
         if (strategy == null)
-            throw new RuntimeException(String.format("No launch strategy for extension %s (%s)", ext, f.getAbsolutePath()));
+            throw new RuntimeException(String.format("No launch strategy for extension %s (%s)",
+                ext, f.getAbsolutePath()));
 
         Plugin p = strategy.run(f);
 
         if (p != null)
             runPlugin(p);
     }
-    
+
     /**
      * Add an active console from a plugin being ran
      */
     public static void addExceptionUI(ExceptionUI ui)
     {
-        if(activePlugin == null)
+        if (activePlugin == null)
         {
             ui.setLocationRelativeTo(BytecodeViewer.viewer);
             ui.setVisible(true);
             return;
         }
-        
-        final String name = (activePlugin == null || activePlugin.activeContainer == null)
-                ? ("#" + (activeTabbedException.getTabbedPane().getTabCount() + 1)) : activePlugin.activeContainer.name;
-        
+
+        final String name = activePlugin.activeContainer == null
+            ? "#" + (activeTabbedException.getTabbedPane().getTabCount() + 1)
+            : activePlugin.activeContainer.name;
+
         ExceptionUI existingUI = exceptionTabs.get(name);
-        
+
         int id = exceptionCount++;
-        if(activeTabbedException == null)
+        if (activeTabbedException == null)
         {
             String title = "Error #" + errorCounter++;
             activeTabbedException = new JFrameConsoleTabbed(title);
-            
-            if(Configuration.pluginConsoleAsNewTab)
+
+            if (Configuration.pluginConsoleAsNewTab)
                 ComponentViewer.addComponentAsTab(title, activeTabbedException.getComponent(0));
             else
                 activeTabbedException.setVisible(true);
         }
-    
-        if(existingUI == null)
+
+        if (existingUI == null)
         {
             activeTabbedException.addConsole(ui.getComponent(0), name);
             exceptionTabs.put(name, ui);
@@ -172,53 +174,56 @@ public final class PluginManager
         else
             existingUI.appendText("\n\r" + ui.getTextArea().getText());
     }
-    
+
     /**
      * Add an active console from a plugin being ran
      */
     public static void addConsole(PluginConsole console)
     {
         int id = consoleCount++;
-    
-        if(activeTabbedConsole == null)
+
+        if (activeTabbedConsole == null)
         {
             activeTabbedConsole = new JFrameConsoleTabbed(console.getTitle());
-            
-            if(Configuration.pluginConsoleAsNewTab)
+
+            if (Configuration.pluginConsoleAsNewTab)
                 ComponentViewer.addComponentAsTab(console.getTitle(), activeTabbedConsole.getComponent(0));
             else
                 activeTabbedConsole.setVisible(true);
         }
-    
+
         console.setConsoleID(id);
-        
-        final String name = (activePlugin == null || activePlugin.activeContainer == null)
-                ? ("#" + (activeTabbedConsole.getTabbedPane().getTabCount() + 1)) : activePlugin.activeContainer.name;
-        
+
+        final String name = (activePlugin == null || activePlugin.activeContainer == null) ? ("#" + (activeTabbedConsole.getTabbedPane().getTabCount() + 1)) : activePlugin.activeContainer.name;
+
         activeTabbedConsole.addConsole(console.getComponent(0), name);
     }
 
-    public static void register(String name, PluginLaunchStrategy strat) {
-        launchStrategies.put(name, strat);
+    public static void register(String name, PluginLaunchStrategy strat)
+    {
+        LAUNCH_STRATEGIES.put(name, strat);
     }
 
-    public static Set<String> pluginExtensions() {
-        return launchStrategies.keySet();
+    public static Set<String> pluginExtensions()
+    {
+        return LAUNCH_STRATEGIES.keySet();
     }
-    
+
     public static Map<String, PluginLaunchStrategy> getLaunchStrategies()
     {
-        return launchStrategies;
+        return LAUNCH_STRATEGIES;
     }
-    
-    public static FileFilter fileFilter() {
-        return filter;
+
+    public static FileFilter fileFilter()
+    {
+        return FILTER;
     }
 
     public static class PluginFileFilter extends FileFilter
     {
         @Override
-        public boolean accept(File f) {
+        public boolean accept(File f)
+        {
             if (f.isDirectory())
                 return true;
 
@@ -226,7 +231,8 @@ public final class PluginManager
         }
 
         @Override
-        public String getDescription() {
+        public String getDescription()
+        {
             return TranslatedStrings.SELECT_EXTERNAL_PLUGIN_DESCRIPTION.toString();
         }
     }

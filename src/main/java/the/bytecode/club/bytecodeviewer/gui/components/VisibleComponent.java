@@ -1,17 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.components;
-
-import com.github.weisj.darklaf.icons.ThemedSVGIcon;
-import the.bytecode.club.bytecodeviewer.Configuration;
-import the.bytecode.club.bytecodeviewer.gui.resourceviewer.Workspace;
-import the.bytecode.club.bytecodeviewer.gui.theme.LAFTheme;
-import the.bytecode.club.bytecodeviewer.resources.IconResources;
-
-import javax.swing.BorderFactory;
-import javax.swing.JInternalFrame;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -27,6 +16,15 @@ import javax.swing.JInternalFrame;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.components;
+
+import com.github.weisj.darklaf.iconset.AllIcons;
+import the.bytecode.club.bytecodeviewer.Configuration;
+import the.bytecode.club.bytecodeviewer.gui.theme.LAFTheme;
+import the.bytecode.club.bytecodeviewer.resources.IconResources;
+
+import javax.swing.*;
+
 /**
  * Used to represent all the panes inside of Bytecode Viewer.
  *
@@ -37,14 +35,15 @@ import javax.swing.JInternalFrame;
 
 public abstract class VisibleComponent extends JInternalFrame
 {
-    public VisibleComponent(final String title)
+    public VisibleComponent(String title)
     {
         super(title, false, false, false, false);
         this.setDefaultIcon();
     }
 
     @Override
-    public void updateUI() {
+    public void updateUI()
+    {
         if (Configuration.lafTheme != LAFTheme.SYSTEM)
             setBorder(BorderFactory.createEmptyBorder());
         else
@@ -54,15 +53,18 @@ public abstract class VisibleComponent extends JInternalFrame
 
     public void setDefaultIcon()
     {
-        try {
-            if(Configuration.showDarkLAFComponentIcons)
-                setFrameIcon(new ThemedSVGIcon(Workspace.class.getResource("/com/github/weisj/darklaf/icons/frame/frame.svg").toURI(), 16, 16));
+        try
+        {
+            if (Configuration.showDarkLAFComponentIcons)
+                setFrameIcon(AllIcons.Window.Frame.get(16, 16));
             else
                 setFrameIcon(IconResources.jarIcon);
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             e.printStackTrace();
         }
     }
-    
+
     private static final long serialVersionUID = -6453413772343643526L;
 }

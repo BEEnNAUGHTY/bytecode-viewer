@@ -1,13 +1,6 @@
-package the.bytecode.club.bytecodeviewer.util;
-
-import me.konloch.kontainer.io.HTTPRequest;
-import the.bytecode.club.bytecodeviewer.Configuration;
-
-import java.net.URL;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,6 +16,13 @@ import java.net.URL;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.util;
+
+import com.konloch.httprequest.HTTPRequest;
+import the.bytecode.club.bytecodeviewer.Configuration;
+
+import java.net.URL;
+
 /**
  * Pings back to bytecodeviewer.com to be added into the total running statistics
  *
@@ -31,13 +31,16 @@ import java.net.URL;
  */
 public class PingBack implements Runnable
 {
-	@Override
-	public void run()
-	{
-		try {
-			new HTTPRequest(new URL("https://bytecodeviewer.com/add.php")).read();
-		} catch (Exception e) {
-			Configuration.pingback = false;
-		}
-	}
+    @Override
+    public void run()
+    {
+        try
+        {
+            new HTTPRequest(new URL("https://bytecodeviewer.com/add.php")).read();
+        }
+        catch (Exception e)
+        {
+            Configuration.pingback = false;
+        }
+    }
 }

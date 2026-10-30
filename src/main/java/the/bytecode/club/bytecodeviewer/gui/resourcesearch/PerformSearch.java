@@ -1,21 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.resourcesearch;
-
-import org.objectweb.asm.tree.ClassNode;
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-import the.bytecode.club.bytecodeviewer.searching.BackgroundSearchThread;
-import the.bytecode.club.bytecodeviewer.searching.RegexInsnFinder;
-import the.bytecode.club.bytecodeviewer.searching.impl.LDCSearch;
-import the.bytecode.club.bytecodeviewer.searching.impl.RegexSearch;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
-import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
-
-import javax.swing.tree.TreePath;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -31,41 +16,52 @@ import java.util.regex.PatternSyntaxException;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.resourcesearch;
+
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+import the.bytecode.club.bytecodeviewer.resources.ResourceContainer;
+import the.bytecode.club.bytecodeviewer.searching.BackgroundSearchThread;
+import the.bytecode.club.bytecodeviewer.searching.RegexInsnFinder;
+import the.bytecode.club.bytecodeviewer.searching.impl.RegexSearch;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
+
+import javax.swing.tree.TreePath;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 /**
  * @author Konloch
  * @since 6/25/2021
  */
 class PerformSearch extends BackgroundSearchThread
 {
-	private final SearchBoxPane searchBoxPane;
-	
-	public PerformSearch(SearchBoxPane searchBoxPane)
-	{
-		this.searchBoxPane = searchBoxPane;
-	}
-	
-	@Override
-	public void search()
-	{
-		try
-		{
-			if(RegexSearch.searchText != null)
-				Pattern.compile(RegexInsnFinder.processRegex(RegexSearch.searchText.getText()), Pattern.MULTILINE);
-		}
-		catch (PatternSyntaxException ex)
-		{
-			BytecodeViewer.showMessage("You have an error in your regex syntax.");
-		}
-		
-		for (ResourceContainer container : BytecodeViewer.resourceContainers.values())
-			container.resourceClasses.forEach((key,cn)->{
-				searchBoxPane.searchType.panel.search(container, key, cn, searchBoxPane.exact.isSelected());
-			});
-		
-		BytecodeViewer.viewer.searchBoxPane.search.setEnabled(true);
-		BytecodeViewer.viewer.searchBoxPane.search.setText(TranslatedStrings.SEARCH.toString());
-		
-		searchBoxPane.tree.expandPath(new TreePath(searchBoxPane.tree.getModel().getRoot()));
-		searchBoxPane.tree.updateUI();
-	}
+    private final SearchBoxPane searchBoxPane;
+
+    public PerformSearch(SearchBoxPane searchBoxPane)
+    {
+        this.searchBoxPane = searchBoxPane;
+    }
+
+    @Override
+    public void search()
+    {
+        try
+        {
+            if (RegexSearch.searchText != null)
+                Pattern.compile(RegexInsnFinder.processRegex(RegexSearch.searchText.getText()), Pattern.MULTILINE);
+        }
+        catch (PatternSyntaxException ex)
+        {
+            BytecodeViewer.showMessage("You have an error in your regex syntax.");
+        }
+
+        for (ResourceContainer container : BytecodeViewer.resourceContainers.values())
+            container.resourceClasses.forEach((key, cn) -> searchBoxPane.searchType.panel.search(container, key, cn, searchBoxPane.exact.isSelected()));
+
+        BytecodeViewer.viewer.searchBoxPane.search.setEnabled(true);
+        BytecodeViewer.viewer.searchBoxPane.search.setText(TranslatedStrings.SEARCH.toString());
+
+        searchBoxPane.tree.expandPath(new TreePath(searchBoxPane.tree.getModel().getRoot()));
+        searchBoxPane.tree.updateUI();
+    }
 }

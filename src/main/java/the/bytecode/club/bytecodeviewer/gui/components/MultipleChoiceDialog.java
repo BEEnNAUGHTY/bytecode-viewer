@@ -1,12 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.components;
-
-import the.bytecode.club.bytecodeviewer.BytecodeViewer;
-
-import javax.swing.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,35 +16,42 @@ import javax.swing.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.components;
+
+import the.bytecode.club.bytecodeviewer.BytecodeViewer;
+
+import javax.swing.*;
+
 /**
  * @author Konloch
  * @since 6/26/2021
  */
 public class MultipleChoiceDialog
 {
-	private final String title;
-	private final String description;
-	private final String[] options;
-	
-	public MultipleChoiceDialog(String title, String description, String[] options)
-	{
-		this.title = title;
-		this.description = description;
-		this.options = options;
-	}
-	
-	public int promptChoice()
-	{
-		JOptionPane pane = new JOptionPane(description);
-		pane.setOptions(options);
-		JDialog dialog = pane.createDialog(BytecodeViewer.viewer, title);
-		dialog.setVisible(true);
-		Object obj = pane.getValue();
-		int result = -1;
-		for (int k = 0; k < options.length; k++)
-			if (options[k].equals(obj))
-				result = k;
-			
-		return result;
-	}
+    private final String title;
+    private final String description;
+    private final String[] options;
+
+    public MultipleChoiceDialog(String title, String description, String[] options)
+    {
+        this.title = title;
+        this.description = description;
+        this.options = options;
+    }
+
+    public int promptChoice()
+    {
+        JOptionPane pane = new JOptionPane(description);
+        pane.setOptions(options);
+        JDialog dialog = pane.createDialog(BytecodeViewer.viewer, title);
+        dialog.setVisible(true);
+        Object obj = pane.getValue();
+        int result = -1;
+
+        for (int k = 0; k < options.length; k++)
+            if (options[k].equals(obj))
+                result = k;
+
+        return result;
+    }
 }

@@ -1,19 +1,6 @@
-package the.bytecode.club.bytecodeviewer.gui.components;
-
-import java.awt.*;
-import java.io.IOException;
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-
-import the.bytecode.club.bytecodeviewer.bootloader.InitialBootScreen;
-import the.bytecode.club.bytecodeviewer.resources.IconResources;
-import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
-
-import static the.bytecode.club.bytecodeviewer.Configuration.*;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -29,6 +16,18 @@ import static the.bytecode.club.bytecodeviewer.Configuration.*;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.gui.components;
+
+import the.bytecode.club.bytecodeviewer.bootloader.InitialBootScreen;
+import the.bytecode.club.bytecodeviewer.resources.IconResources;
+import the.bytecode.club.bytecodeviewer.translation.TranslatedStrings;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.IOException;
+
+import static the.bytecode.club.bytecodeviewer.Configuration.language;
+
 /**
  * The about window - used to explain what BCV is, how to use it, etc.
  *
@@ -43,10 +42,10 @@ public class AboutWindow extends JFrame
         setSize(InitialBootScreen.getSafeSize());
         setTitle(TranslatedStrings.ABOUT_TITLE.toString());
         getContentPane().setLayout(new CardLayout(0, 0));
-        
+
         JScrollPane scrollPane = new JScrollPane();
         getContentPane().add(scrollPane);
-        
+
         try
         {
             scrollPane.setViewportView(HTMLPane.fromResource(language.getHTMLPath("intro")));
@@ -55,7 +54,7 @@ public class AboutWindow extends JFrame
         {
             e.printStackTrace();
         }
-        
+
         this.setLocationRelativeTo(null);
     }
 

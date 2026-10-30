@@ -1,11 +1,6 @@
-package the.bytecode.club.bytecodeviewer.bootloader.resource.external;
-
-import java.io.IOException;
-import java.net.URL;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -21,28 +16,37 @@ import java.net.URL;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.bootloader.resource.external;
+
+import java.io.IOException;
+import java.net.URL;
+
 /**
  * @author Bibl (don't ban me pls)
- * @created 19 Jul 2015 02:30:30
+ * @since 19 Jul 2015 02:30:30
  */
-public abstract class ExternalResource<T> {
+public abstract class ExternalResource<T>
+{
 
     private final URL location;
 
-    public ExternalResource(URL location) {
+    public ExternalResource(URL location)
+    {
         if (location == null)
             throw new IllegalArgumentException();
         this.location = location;
     }
 
-    public URL getLocation() {
+    public URL getLocation()
+    {
         return location;
     }
 
     public abstract T load() throws IOException;
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int prime = 31;
         int result = 1;
         result = prime * result + location.hashCode();
@@ -50,7 +54,8 @@ public abstract class ExternalResource<T> {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(Object obj)
+    {
         if (this == obj)
             return true;
         if (obj == null)
@@ -62,7 +67,8 @@ public abstract class ExternalResource<T> {
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "Library @" + location.toExternalForm();
     }
 }

@@ -1,11 +1,6 @@
-package the.bytecode.club.bytecodeviewer.util;
-
-import java.util.function.BiFunction;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -21,22 +16,27 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.util;
+
+import org.fife.ui.rsyntaxtextarea.FileTypeUtil;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+
+import java.io.File;
+import java.util.function.BiFunction;
+
 /**
  * @author ThexXTURBOXx
  */
 public enum SyntaxLanguage
 {
-    XML(SyntaxConstants.SYNTAX_STYLE_XML,
-            (n, c) -> n.endsWith(".xml") || c.startsWith("<?xml") || c.startsWith("<xml")),
+    XML(SyntaxConstants.SYNTAX_STYLE_XML, (n, c) -> n.endsWith(".xml") || c.startsWith("<?xml") || c.startsWith("<xml")),
     PYTHON(SyntaxConstants.SYNTAX_STYLE_PYTHON, (n, c) -> n.endsWith(".py") || n.endsWith(".python")),
     RUBY(SyntaxConstants.SYNTAX_STYLE_RUBY, (n, c) -> n.endsWith(".rb") || n.endsWith(".ruby")),
     JAVA(SyntaxConstants.SYNTAX_STYLE_JAVA, (n, c) -> n.endsWith(".java")),
     HTML(SyntaxConstants.SYNTAX_STYLE_HTML, (n, c) -> n.endsWith(".html")),
     CSS(SyntaxConstants.SYNTAX_STYLE_CSS, (n, c) -> n.endsWith(".css")),
-    PROPERTIES(SyntaxConstants.SYNTAX_STYLE_PROPERTIES_FILE,
-            (n, c) -> n.endsWith(".properties") || n.endsWith(".mf") || n.endsWith(".sf")
-                    || n.endsWith(".plugin") || n.endsWith(".attachprovider") || n.endsWith(".transportservice")
-                    || n.endsWith(".connector")),
+    PROPERTIES(SyntaxConstants.SYNTAX_STYLE_PROPERTIES_FILE, (n, c) -> n.endsWith(".properties") || n.endsWith(".mf") || n.endsWith(".sf") || n.endsWith(".plugin") || n.endsWith(".attachprovider") || n.endsWith(".transportservice") || n.endsWith(".connector")),
     PHP(SyntaxConstants.SYNTAX_STYLE_PHP, (n, c) -> n.endsWith(".php") || c.startsWith("<?php")),
     JS(SyntaxConstants.SYNTAX_STYLE_JAVASCRIPT, (n, c) -> n.endsWith(".js")),
     BATCH(SyntaxConstants.SYNTAX_STYLE_WINDOWS_BATCH, (n, c) -> n.endsWith(".bat")),
@@ -67,29 +67,50 @@ public enum SyntaxLanguage
 
     public static final SyntaxLanguage[] VALUES = values();
 
+    private static final FileTypeUtil FILE_TYPE_UTIL = FileTypeUtil.get();
+
     private final BiFunction<String, String, Boolean> criteria;
 
     private final String syntaxConstant;
 
-    SyntaxLanguage(String syntaxConstant, BiFunction<String, String, Boolean> criteria) {
+    SyntaxLanguage(String syntaxConstant, BiFunction<String, String, Boolean> criteria)
+    {
         this.criteria = criteria;
         this.syntaxConstant = syntaxConstant;
     }
 
-    public boolean isLanguage(String fileName, String content) {
+    public boolean isLanguage(String fileName, String content)
+    {
         return criteria.apply(fileName, content);
     }
 
-    public String getSyntaxConstant() {
+    public String getSyntaxConstant()
+    {
         return syntaxConstant;
     }
 
-    public static SyntaxLanguage detectLanguage(String fileName, String content) {
-        for (SyntaxLanguage lang : VALUES) {
-            if (lang.isLanguage(fileName, content)) {
+    /**
+     * @deprecated See {@link #setLanguage(RSyntaxTextArea, String)}.
+     */
+    @Deprecated
+    public static SyntaxLanguage detectLanguage(String fileName, String content)
+    {
+        for (SyntaxLanguage lang : VALUES)
+        {
+            if (lang.isLanguage(fileName, content))
                 return lang;
-            }
         }
+
         return NONE;
+    }
+
+    public static void setLanguage(RSyntaxTextArea area, String fileName)
+    {
+        String type = FILE_TYPE_UTIL.guessContentType(new File(fileName));
+
+        if (type == null || type.equals(SyntaxConstants.SYNTAX_STYLE_NONE))
+            type = FILE_TYPE_UTIL.guessContentType(area);
+
+        area.setSyntaxEditingStyle(type);
     }
 }

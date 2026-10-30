@@ -1,12 +1,6 @@
-package the.bytecode.club.bytecodeviewer.bootloader;
-
-import the.bytecode.club.bytecodeviewer.bootloader.Boot;
-
-import static the.bytecode.club.bytecodeviewer.Constants.AUTOMATIC_LIBRARY_UPDATING;
-
 /***************************************************************************
  * Bytecode Viewer (BCV) - Java & Android Reverse Engineering Suite        *
- * Copyright (C) 2014 Kalen 'Konloch' Kinloch - http://bytecodeviewer.com  *
+ * Copyright (C) 2014 Konloch - Konloch.com / BytecodeViewer.com           *
  *                                                                         *
  * This program is free software: you can redistribute it and/or modify    *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,9 +16,13 @@ import static the.bytecode.club.bytecodeviewer.Constants.AUTOMATIC_LIBRARY_UPDAT
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
 
+package the.bytecode.club.bytecodeviewer.bootloader;
+
+import static the.bytecode.club.bytecodeviewer.Constants.AUTOMATIC_LIBRARY_UPDATING;
+
 /**
  * Downloads & installs the krakatau & enjarify zips
- *
+ * <p>
  * Alternatively if OFFLINE_MODE is enabled it will drop the Krakatau and Enjarify versions supplied with BCV
  *
  * @author Konloch
@@ -32,28 +30,28 @@ import static the.bytecode.club.bytecodeviewer.Constants.AUTOMATIC_LIBRARY_UPDAT
  */
 public class InstallFatJar implements Runnable
 {
-	@Override
-	public void run()
-	{
-		try
-		{
-			if (AUTOMATIC_LIBRARY_UPDATING)
-			{
-				Boot.populateUrlList();
-				Boot.populateLibsDirectory();
-				Boot.downloadZipsOnly();
-				Boot.checkKrakatau();
-				Boot.checkEnjarify();
-			}
-			else
-			{
-				Boot.dropKrakatau();
-				Boot.dropEnjarify();
-			}
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-	}
+    @Override
+    public void run()
+    {
+        try
+        {
+            if (AUTOMATIC_LIBRARY_UPDATING)
+            {
+                Boot.populateUrlList();
+                Boot.populateLibsDirectory();
+                Boot.downloadZipsOnly();
+                Boot.checkKrakatau();
+                Boot.checkEnjarify();
+            }
+            else
+            {
+                Boot.dropKrakatau();
+                Boot.dropEnjarify();
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
 }
